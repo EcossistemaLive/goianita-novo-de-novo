@@ -149,7 +149,7 @@ function renderDashboard() {
                     <td>${cliente.nome}</td>
                     <td>${formatCurrency(p.precoVenda)}</td>
                     <td>${getStatusBadge(p.status)}</td>
-                    <td><a href="produto-detalhe.html?id=${p.id}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Ver</a></td>
+                    <td><a href="pages/produto-detalhe.html?id=${p.id}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Ver</a></td>
                 </tr>
             `;
         }).join('');
