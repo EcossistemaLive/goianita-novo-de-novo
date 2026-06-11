@@ -363,7 +363,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .premium-table th {
     background-color: var(--bg-secondary);
-    color: var(--text-muted);
+    color: #ffffff; /* Letras brancas para contraste perfeito no fundo verde */
     font-weight: 600;
     font-size: 13px;
     text-transform: uppercase;
