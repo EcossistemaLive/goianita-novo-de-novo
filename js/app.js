@@ -40,6 +40,17 @@ function initUserSession() {
     if (nameEl) nameEl.textContent = user.name;
     if (roleEl) roleEl.textContent = user.role;
     if (avatarEl) avatarEl.textContent = user.avatar;
+
+    // Configura botão Sair
+    const logoutBtn = document.getElementById('btn-logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.clear();
+            const currentPath = window.location.pathname;
+            window.location.href = currentPath.includes('/pages/') ? '../index.html' : 'index.html';
+        });
+    }
 }
 
 // Roteamento Simples Baseado em Hash ou detecção do nome do arquivo
@@ -189,6 +200,22 @@ function renderClientesList() {
     // Formulário de novo cliente (se estiver na mesma página em modal, ou capturando submit da página de cadastro)
     const form = document.getElementById('cliente-form');
     if (form) {
+        // Autofill da chave Pix ao mudar o tipo
+        const selectPixType = document.getElementById('cli-pix-type');
+        if (selectPixType) {
+            selectPixType.addEventListener('change', () => {
+                const type = selectPixType.value;
+                const cpfVal = document.getElementById('cli-cpf').value.trim();
+                const telVal = document.getElementById('cli-tel').value.trim();
+                const emailVal = document.getElementById('cli-email').value.trim();
+                const pixField = document.getElementById('cli-pix');
+                
+                if (type === 'CPF') pixField.value = cpfVal;
+                else if (type === 'Celular') pixField.value = telVal;
+                else if (type === 'Email') pixField.value = emailVal;
+            });
+        }
+
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const novoCliente = {
