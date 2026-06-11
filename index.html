@@ -91,11 +91,19 @@
             const pass = document.getElementById('password').value.trim();
             const btnSubmit = document.querySelector('button[type="submit"]');
 
+            const lowerUser = user.toLowerCase();
+
             // Detectar se o login é de administrador
-            const isAdminEmail = user === 'admin' || user === 'admin@goianita.com.br' || user === 'cleber.ihs@gmail.com' || user === 'eduardfreitasg@gmail.com' || user === 'debora@goianita.com.br';
+            const isAdminEmail = lowerUser === 'admin' || lowerUser === 'admin@goianita.com.br' || 
+                                 lowerUser === 'cleber.ihs@gmail.com' || 
+                                 lowerUser === 'eduard' || lowerUser === 'eduardfreitasg@gmail.com' || 
+                                 lowerUser === 'debora' || lowerUser === 'debora@goianita.com.br';
             
             if (isAdminEmail) {
-                const adminEmail = user === 'admin' ? 'admin@goianita.com.br' : user;
+                let adminEmail = lowerUser;
+                if (lowerUser === 'admin') adminEmail = 'admin@goianita.com.br';
+                else if (lowerUser === 'debora') adminEmail = 'debora@goianita.com.br';
+                else if (lowerUser === 'eduard') adminEmail = 'eduardfreitasg@gmail.com';
                 
                 if (typeof firebase === 'undefined' || !window.GoianitaAuth) {
                     // Fallback local se estiver offline
