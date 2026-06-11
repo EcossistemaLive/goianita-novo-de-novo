@@ -109,6 +109,7 @@
                     // Fallback local se estiver offline
                     if (pass === 'goianita123') {
                         sessionStorage.setItem('goianita_role', 'admin');
+                        sessionStorage.setItem('goianita_email', adminEmail);
                         sessionStorage.removeItem('goianita_cliente_id');
                         window.location.href = 'dashboard.html';
                     } else {
@@ -123,6 +124,7 @@
                 window.GoianitaAuth.signInWithEmailAndPassword(adminEmail, pass)
                     .then(() => {
                         sessionStorage.setItem('goianita_role', 'admin');
+                        sessionStorage.setItem('goianita_email', adminEmail);
                         sessionStorage.removeItem('goianita_cliente_id');
                         window.location.href = 'dashboard.html';
                     })
@@ -169,6 +171,8 @@
                     if (clienteEncontrado) {
                         sessionStorage.setItem('goianita_role', 'user');
                         sessionStorage.setItem('goianita_cliente_id', clienteEncontrado.id);
+                        sessionStorage.setItem('goianita_user_name', clienteEncontrado.nome);
+                        sessionStorage.setItem('goianita_email', email);
                         window.location.href = 'pages/cliente-detalhe.html?id=' + clienteEncontrado.id;
                     } else {
                         // Se o Auth foi mas não temos o cadastro local, cria perfil básico
@@ -184,6 +188,8 @@
                         window.GoianitaDB.clientes.save(basicCliente).then(saved => {
                             sessionStorage.setItem('goianita_role', 'user');
                             sessionStorage.setItem('goianita_cliente_id', saved.id);
+                            sessionStorage.setItem('goianita_user_name', saved.nome);
+                            sessionStorage.setItem('goianita_email', email);
                             window.location.href = 'pages/cliente-detalhe.html?id=' + saved.id;
                         });
                     }

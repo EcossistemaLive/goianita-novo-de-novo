@@ -16,10 +16,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initUserSession() {
     const role = sessionStorage.getItem('goianita_role') || 'admin';
+    const email = sessionStorage.getItem('goianita_email') || '';
+    const userName = sessionStorage.getItem('goianita_user_name') || '';
+
+    let name = "Cléber";
+    let avatar = "CL";
+
+    if (role === 'admin') {
+        const lowerEmail = email.toLowerCase();
+        if (lowerEmail.includes('eduard')) {
+            name = "Eduardo";
+            avatar = "ED";
+        } else if (lowerEmail.includes('debora')) {
+            name = "Débora";
+            avatar = "DE";
+        } else if (lowerEmail.includes('cleber')) {
+            name = "Cléber";
+            avatar = "CL";
+        } else {
+            name = "Administrador";
+            avatar = "AD";
+        }
+    } else {
+        name = userName || "Cliente Fornecedor";
+        avatar = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || "CF";
+    }
+
     const user = {
-        name: role === 'admin' ? "Cleber" : "Cliente Fornecedor",
+        name: name,
         role: role === 'admin' ? "Administrador Goianita" : "Acesso Cliente",
-        avatar: role === 'admin' ? "CL" : "CF"
+        avatar: avatar
     };
     
     // Se for tipo 'user' e estiver tentando acessar páginas de admin, barra e redireciona
