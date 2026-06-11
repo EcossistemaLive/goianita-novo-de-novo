@@ -321,18 +321,20 @@ function renderClienteDetalhe() {
     // Atualiza valores financeiros do painel
     const financeiro = window.GoianitaDB.utils.calcularValoresCliente(id);
     document.getElementById('cli-saldo-pendente').textContent = formatCurrency(financeiro.saldoPendente);
+    document.getElementById('cli-saldo-disponivel').textContent = formatCurrency(financeiro.saldoDisponivel);
+    document.getElementById('cli-saldo-bloqueado').textContent = formatCurrency(financeiro.saldoBloqueado);
     document.getElementById('cli-total-vendas').textContent = formatCurrency(financeiro.totalApostado);
     document.getElementById('cli-total-pago').textContent = formatCurrency(financeiro.totalPago);
 
-    // Habilita ou desabilita botão de pagamento se não tiver saldo
+    // Habilita ou desabilita botão de pagamento se não tiver saldo disponível
     const btnPagar = document.getElementById('btn-pagar-cliente');
     if (btnPagar && role === 'admin') {
-        btnPagar.disabled = financeiro.saldoPendente <= 0;
+        btnPagar.disabled = financeiro.saldoDisponivel <= 0;
         btnPagar.addEventListener('click', () => {
-            const valorPagar = prompt(`Confirmar pagamento via PIX para este cliente?\nValor Pendente: ${formatCurrency(financeiro.saldoPendente)}\n\nDigite o valor para transferir:`, financeiro.saldoPendente.toFixed(2));
+            const valorPagar = prompt(`Confirmar pagamento via PIX para este cliente?\nValor Disponível (Liberado): ${formatCurrency(financeiro.saldoDisponivel)}\nSaldo Bloqueado (Vendas < 30 dias): ${formatCurrency(financeiro.saldoBloqueado)}\n\nDigite o valor para transferir:`, financeiro.saldoDisponivel.toFixed(2));
             if (valorPagar) {
                 const valor = parseFloat(valorPagar);
-                if (valor > 0 && valor <= financeiro.saldoPendente) {
+                if (valor > 0 && valor <= financeiro.saldoDisponivel) {
                     const comp = prompt("Insira o código de autenticação do PIX / comprovante da transação bancária:");
                     if (comp) {
                         btnPagar.disabled = true;

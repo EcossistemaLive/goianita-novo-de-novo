@@ -45,6 +45,11 @@
                             <i class="fa-solid fa-wallet"></i> Financeiro / Repasses
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="regulamento.html">
+                            <i class="fa-solid fa-file-contract"></i> Regulamento
+                        </a>
+                    </li>
                 </ul>
             </nav>
             
@@ -84,18 +89,28 @@
                 <!-- Coluna Principal -->
                 <div class="detail-main">
                     <!-- Ficha Financeira do Fornecedor -->
-                    <div class="card-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 0;">
+                    <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 0; gap: 16px;">
+                        <div class="kpi-card" style="border-left: 4px solid var(--status-pago);">
+                            <div class="kpi-title">Saldo Disponível (Liberado)</div>
+                            <div class="kpi-value" id="cli-saldo-disponivel" style="color: var(--status-pago);">R$ 0,00</div>
+                            <div class="kpi-desc">Liberado após 30 dias da venda</div>
+                        </div>
+                        <div class="kpi-card" style="border-left: 4px solid #ed6c02;">
+                            <div class="kpi-title">Saldo Bloqueado</div>
+                            <div class="kpi-value" id="cli-saldo-bloqueado" style="color: #ed6c02;">R$ 0,00</div>
+                            <div class="kpi-desc">Vendas recentes (libera em 30 dias)</div>
+                        </div>
                         <div class="kpi-card" style="border-left: 4px solid var(--accent-gold);">
-                            <div class="kpi-title">Saldo Pendente</div>
+                            <div class="kpi-title">Saldo Total Pendente</div>
                             <div class="kpi-value" id="cli-saldo-pendente">R$ 0,00</div>
-                            <div class="kpi-desc">Valor líquido a ser pago via PIX</div>
+                            <div class="kpi-desc">Total a receber (Disponível + Bloqueado)</div>
                         </div>
                         <div class="kpi-card">
                             <div class="kpi-title">Vendas Totais</div>
                             <div class="kpi-value" id="cli-total-vendas">R$ 0,00</div>
                             <div class="kpi-desc">Quota do cliente de vendas concluídas</div>
                         </div>
-                        <div class="kpi-card" style="border-left: 4px solid var(--status-pago);">
+                        <div class="kpi-card" style="border-left: 4px solid #0288d1;">
                             <div class="kpi-title">Repasses Efetuados</div>
                             <div class="kpi-value" id="cli-total-pago">R$ 0,00</div>
                             <div class="kpi-desc">Total pago em histórico</div>

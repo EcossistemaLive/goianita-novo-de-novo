@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regulamento - Goianita Novo de novo</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .regulamento-text {
+            background-color: var(--bg-secondary);
+            color: var(--text-main);
+            padding: 32px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            line-height: 1.6;
+            max-height: 70vh;
+            overflow-y: auto;
+            text-align: justify;
+            font-size: 14px;
+        }
+        .regulamento-text h3 {
+            color: var(--accent-gold);
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-family: var(--font-heading);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+        .regulamento-text p {
+            margin-bottom: 14px;
+        }
+        .regulamento-text ul {
+            margin-left: 20px;
+            margin-bottom: 14px;
+        }
+        .regulamento-text li {
+            margin-bottom: 6px;
+        }
+        .highlight-box {
+            background-color: rgba(212, 175, 55, 0.1);
+            border-left: 4px solid var(--accent-gold);
+            padding: 16px;
+            margin-bottom: 24px;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <img src="../logo.png" alt="Logo Goianita" />
+                <div>
+                    <span class="logo-text">Goianita Novo de novo</span>
+                    <span class="logo-sub">Consignações</span>
+                </div>
+            </div>
+            
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="../dashboard.html">
+                            <i class="fa-solid fa-chart-line"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="clientes.html">
+                            <i class="fa-solid fa-users"></i> Clientes / Fornecedores
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="produtos.html">
+                            <i class="fa-solid fa-box-open"></i> Produtos Consignados
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="financeiro.html">
+                            <i class="fa-solid fa-wallet"></i> Financeiro / Repasses
+                        </a>
+                    </li>
+                    <li class="nav-item active">
+                        <a href="regulamento.html">
+                            <i class="fa-solid fa-file-contract"></i> Regulamento
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-badge">
+                    <div class="user-avatar">CL</div>
+                    <div class="user-info">
+                        <span class="user-name">Cleber</span>
+                        <span class="user-role">Administrador</span>
+                    </div>
+                </div>
+                <a href="#" id="btn-logout" class="btn btn-secondary" style="width: 100%; margin-top: 16px; padding: 8px; font-size: 13px; color: #ffffff; border-color: rgba(255,255,255,0.2); background-color: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">Regulamento de Consignação</h1>
+                    <p class="page-subtitle">Termos, regras e condições contratuais do comodato Casas Goianita.</p>
+                </div>
+            </header>
+
+            <div class="highlight-box">
+                <i class="fa-solid fa-circle-info" style="color: var(--accent-gold); margin-right: 8px;"></i>
+                <strong>Atenção às Regras de Pagamento:</strong> Conforme definido na Cláusula 5ª, os repasses de produtos vendidos ficam bloqueados por <strong>30 dias corridos</strong> após a data da venda, tornando-se disponíveis para retirada ou uso em saldo automaticamente após este período.
+            </div>
+
+            <div class="regulamento-text">
+                <h3>QUALIFICAÇÃO DAS PARTES</h3>
+                <p><strong>CONSIGNATÁRIA:</strong> VIRTUAL DISTRIBUIDORA DE UTILIDADES DOMÉSTICAS LTDA (CASAS GOIANITA), sociedade limitada, inscrita no CNPJ sob o nº 11.316.256/0001-29, situada na Rua 85, nº 369, Quadra F19, Lote 45, Setor Sul, Goiânia/GO, CEP: 74080-010, neste ato representada nos termos de seu contrato social.</p>
+                <p><strong>CONSIGNANTE:</strong> Pessoa física ou jurídica devidamente cadastrada no sistema de consignação Casas Goianita, doravante identificada no ato do cadastro digital vinculada ao CPF informado.</p>
+                <p>As partes acima qualificadas celebram, entre si, o presente instrumento particular denominado <strong>CONTRATO DE CONSIGNAÇÃO DE PEÇAS E UTILIDADES</strong>, que será regido pela legislação aplicável, em especial, pelos artigos 534 e seguintes do Código Civil Brasileiro e pelas cláusulas e disposições seguintes:</p>
+
+                <h3>CLÁUSULAS CONTRATUAIS</h3>
+
+                <p><strong>Cláusula 1ª</strong> – Considera-se CONSIGNANTE a pessoa física ou jurídica que, voluntariamente e com o objetivo de vender bens móveis de sua propriedade, deixa-os sob os cuidados da CONSIGNATÁRIA, a fim de que esta proceda à comercialização respectiva, com o posterior repasse cabível ao(à) CONSIGNANTE dos recursos líquidos resultantes da venda, observadas as regras de repasse e prazos de disponibilidade definidos neste instrumento.</p>
+                <p><em>Parágrafo Único.</em> O(A) CONSIGNANTE autoriza, de forma gratuita e irrevogável, o uso de imagens, fotos e vídeos dos bens consignados para fins de divulgação, publicidade e venda em quaisquer meios, incluindo redes sociais e e-commerce, pela CONSIGNATÁRIA, renunciando a qualquer remuneração, pleito de direitos autorais ou de imagem sobre as produções realizadas pela loja.</p>
+
+                <p><strong>Cláusula 2ª</strong> – A partir da assinatura do presente contrato, fica o(a) CONSIGNANTE habilitado a disponibilizar à CONSIGNATÁRIA bens móveis de sua propriedade e de cuja origem e autenticidade se responsabiliza para fins civis e penais, a fim de que a CONSIGNATÁRIA os exponha à venda, após regular avaliação.</p>
+                <p><em>§1º.</em> Os bens deixados em consignação serão conferidos, cadastrados, avaliados e lançados no sistema informatizado em nome do(a) CONSIGNANTE. Constatada a falsificação ou contrafação de qualquer item, o(a) CONSIGNANTE responderá integralmente por perdas e danos, e deverá arcar, no prazo máximo de 07 (sete) dias úteis após notificado, com multa equivalente ao valor em que a peça foi anunciada à venda pela CONSIGNATÁRIA, autorizando, desde já, a retenção de valores futuros a receber da CONSIGNATÁRIA para satisfação desta multa, além de estar sujeito à exclusão imediata do quadro de consignantes.</p>
+                <p><em>§2º.</em> A avaliação citada acima será realizada com exclusividade pela CONSIGNATÁRIA, com base no preço médio que pratica e considerando o estado de conservação do produto, sua marca, sua liquidez, sua facilidade de comercialização e outros demais aspectos que a CONSIGNATÁRIA entender, ao seu juízo, pertinentes à venda do produto, não cabendo ao(à) CONSIGNANTE interferir nessa avaliação, a qual declara expressamente anuir por força do presente, para nada questionar a esse respeito.</p>
+                <p><em>§3º.</em> A CONSIGNATÁRIA poderá recusar, sem necessidade de apresentar qualquer justificativa, a recepção de bens deteriorados, desgastados em excesso ou que, por qualquer outro motivo, considere não vendáveis e/ou compatíveis com a qualidade mínima dos itens que habitualmente comercializa.</p>
+                <p><em>§4º.</em> As peças reprovadas na triagem citada acima ou aquelas cujo valor de avaliação seja expressamente rejeitado pelo(a) CONSIGNANTE após apresentação pela CONSIGNATÁRIA, deverão ser retiradas da loja no prazo de 07 (sete) dias úteis, contados do aviso de recusa emitido pela CONSIGNATÁRIA. Transcorrido o referido prazo sem a retirada física dos itens, o(a) CONSIGNANTE autoriza, de forma irrevogável, que a CONSIGNATÁRIA promova a doação ou comercialização em bazares beneficentes, com a reversão dos valores apurados para fins sociais.</p>
+                <p><em>§5º.</em> O(A) CONSIGNANTE, desde já, autoriza que a doação prevista no parágrafo anterior poderá ser realizada pela CONSIGNATÁRIA em favor de instituições de caridade parceiras, para que estas promovam a venda do produto em ações e bazares sociais.</p>
+                <p><em>§6º.</em> No ato da entrega dos bens móveis pelo(a) CONSIGNANTE, será emitido pela CONSIGNATÁRIA um recibo, em formato digital, contendo a quantidade total de peças recebidas, caracterizando a fase de pré-triagem na qual os itens ainda não se encontram precificados. Em momento posterior, a CONSIGNATÁRIA procederá à avaliação de aptidão, cadastrando e precificando as peças aptas, disponibilizando ao(à) CONSIGNANTE as informações pelos canais digitais.</p>
+
+                <p><strong>Cláusula 3ª</strong> – A CONSIGNATÁRIA se responsabiliza pela guarda dos bens deixados em consignação, assumindo a responsabilidade por eventuais danos, excetuadas situações de caso fortuito ou de força maior, tais como fenômenos da natureza, calamidades, incêndios, catástrofes, saques, roubos, aos quais não tenha dado causa.</p>
+
+                <p><strong>Cláusula 4ª</strong> – Os bens consignados serão expostos à venda de acordo com a organização interna e sob o exclusivo critério da CONSIGNATÁRIA, podendo ser comercializados em lojas físicas, feiras, eventos externos, e-commerce (internet), anúncios em mídias digitais ou qualquer outro mecanismo de comercialização, não cabendo ao(à) CONSIGNANTE interferir no processo de exposição, vendas ou publicidade.</p>
+
+                <p><strong>Cláusula 5ª</strong> – Realizada a venda pela CONSIGNATÁRIA, caberá ao(à) CONSIGNANTE o recebimento do valor correspondente ao preço líquido acordado (deduzida a comissão da loja).</p>
+                <p><em>§1º.</em> O valor líquido devido ao(à) CONSIGNANTE será demonstrado no painel do usuário e ficará bloqueado durante 30 (trinta) dias contados da data da venda do produto. O saldo tornar-se-á disponível para retirada/uso na loja somente após o 30° dia.</p>
+                <p><em>§2º.</em> O pagamento ao(à) CONSIGNANTE poderá ser feito por transferência bancária (PIX), ou o crédito poderá permanecer registrado no cadastro do(a) CONSIGNANTE para uso futuro ou compras em loja.</p>
+                <p><em>§3º.</em> Optando o(a) CONSIGNANTE pela transferência bancária dos recursos (PIX), ele deverá fornecer os dados bancários de conta de sua titularidade, e o crédito em conta deverá ser realizado em até 7 (sete) dias úteis após a requisição de saque.</p>
+                <p><em>§4º.</em> Caberá exclusivamente ao(à) CONSIGNANTE acompanhar as vendas por meio do aplicativo disponibilizado pela CONSIGNATÁRIA, sendo de sua inteira responsabilidade a manutenção de seu login e a atualização de seus dados.</p>
+                <p><em>§5º.</em> Aplica-se ao presente contrato o prazo de prescrição trienal previsto no artigo 206, §3º, inciso IV do Código Civil.</p>
+
+                <p><strong>Cláusula 6ª</strong> – Fica, desde já, ressalvado o direito da CONSIGNATÁRIA, a qualquer tempo, devolver o produto ao(à) CONSIGNANTE, mediante prévia comunicação por e-mail, whatsapp e/ou aplicativo próprio.</p>
+                <p><em>§1º.</em> Transcorrido o prazo de 30 (trinta) dias corridos a partir da comunicação prevista no caput e não retirado o bem pelo(a) CONSIGNANTE, fica a CONSIGNATÁRIA autorizada a doar o bem para entidades beneficentes parceiras. Durante o transcurso deste prazo de 30 (trinta) dias, o produto poderá continuar exposto e disponível para venda.</p>
+                <p><em>§2º.</em> O envio de mensagens pelo(a) CONSIGNANTE, sem a devida confirmação e concordância por parte da CONSIGNATÁRIA, não altera ou prorroga o prazo estabelecido.</p>
+                <p><em>§3º.</em> Independentemente do prazo previsto no §1º, poderá o(a) CONSIGNANTE, por meio do aplicativo, autorizar antecipadamente a doação dos bens consignados não vendidos.</p>
+
+                <p><strong>Cláusula 7ª</strong> – Caso o bem consignado não seja comercializado em até 90 (noventa) dias contados da aprovação do produto, o(a) CONSIGNANTE autoriza a CONSIGNATÁRIA a reduzir em até 50% (cinquenta por cento) o valor do(s) produto(s) não vendido(s), com o objetivo de aumentar a liquidez, com redução proporcional na quota-parte de ambas as partes.</p>
+
+                <p><strong>Cláusula 8ª</strong> – Caso o(a) CONSIGNANTE queira retirar a(s) peça(s) consignada(s) da loja antes do prazo, deverá informar a CONSIGNATÁRIA por escrito ou via aplicativo com antecedência mínima de 30 (trinta) dias corridos.</p>
+                <p><em>§1º.</em> Fica proibido ao(à) CONSIGNANTE procurar e retirar diretamente o bem no interior ou áreas restritas da loja sem acompanhamento e liberação da gerência.</p>
+                <p><em>§2º.</em> Se o bem requerido de volta for comercializado antes ou durante o prazo de devolução, competirá ao consignante tão somente o valor líquido de repasse correspondente.</p>
+
+                <p><strong>Cláusula 9ª</strong> – Este instrumento poderá ser rescindido unilateralmente pelas partes, ou por mútuo consentimento, independentemente de notificação judicial.</p>
+
+                <p><strong>Cláusula 10ª</strong> – O(A) CONSIGNANTE reconhece que o presente contrato de consignação (estimatório) é de natureza paritária e regido pela Lei Federal nº 10.406/2002 (Código Civil).</p>
+
+                <p><strong>Cláusula 11ª</strong> – O(A) CONSIGNANTE, em observância à Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/18), autoriza o tratamento de seus dados pessoais para as finalidades operacionais deste contrato, conforme termo disponível no portal de privacidade CASAS GOIANITA - LGPD.</p>
+
+                <p><strong>Cláusula 12ª</strong> – A CONSIGNATÁRIA se compromete a tratar os Dados Pessoais do(a) CONSIGNANTE de forma sigilosa e confidencial, em conformidade com as regras de segurança da informação aplicáveis.</p>
+
+                <p><strong>Cláusula 13ª</strong> – O(A) CONSIGNANTE reconhece e aceita que a marca CASAS GOIANITA e quaisquer sinais distintivos a ela associados são de propriedade exclusiva da CONSIGNATÁRIA, comprometendo-se a respeitar as diretrizes de imagem e divulgação da marca.</p>
+
+                <p><strong>Cláusula 14ª</strong> – O uso da expressão CONSIGNANTE se refere a todos aqueles assim qualificados, no singular ou no plural.</p>
+
+                <p><strong>Cláusula 15ª</strong> – Fica eleito o foro da Comarca de Goiânia/GO para dirimir quaisquer dúvidas ou litígios decorrentes deste instrumento, renunciando a qualquer outro, por mais privilegiado que seja.</p>
+
+                <p><strong>Cláusula 16ª</strong> – Este contrato é assinado e aceito eletronicamente pelas partes mediante cadastro e validação eletrônica no aplicativo da CONSIGNATÁRIA, possuindo plena validade jurídica e eficácia nos termos da legislação brasileira vigente.</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/db.js"></script>
+    <script src="../js/app.js"></script>
+</body>
+</html>

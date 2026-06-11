@@ -118,16 +118,35 @@ function startAutomationSimulation() {
             const pagsCliente = pagamentos.filter(p => p.clienteId === c.id);
             
             const produtosVendidos = prodsCliente.filter(p => p.status === 'Vendido' || p.status === 'Pago');
-            const totalApostado = produtosVendidos.reduce((acc, p) => acc + (p.precoVenda - (p.precoVenda * p.comissao / 100)), 0);
-            const totalPago = pagsCliente.reduce((acc, p) => acc + p.valor, 0);
-            const saldoPendente = totalApostado - totalPago;
+            let totalDisponivel = 0;
+            let saldoBloqueado = 0;
+
+            produtosVendidos.forEach(p => {
+                const comissaoLojista = (p.precoVenda * p.comissao) / 100;
+                const valorCliente = p.precoVenda - comissaoLojista;
+
+                if (p.status === 'Pago') {
+                    totalDisponivel += valorCliente;
+                } else if (p.status === 'Vendido') {
+                    const dataVenda = p.dataVenda || (p.statusHistorico && p.statusHistorico.find(h => h.status === 'Vendido')?.data) || p.dataEntrada;
+                    const diasDesdeVenda = Math.floor((new Date() - new Date(dataVenda)) / (1000 * 60 * 60 * 24));
+                    
+                    if (diasDesdeVenda >= 30) {
+                        totalDisponivel += valorCliente;
+                    } else {
+                        saldoBloqueado += valorCliente;
+                    }
+                }
+            });
+
+            const saldoDisponivel = Math.max(0, totalDisponivel - totalPago);
             
-            if (saldoPendente > 50 && Math.random() > 0.6) {
-                // Efetua repasse automático de todo o saldo
+            if (saldoDisponivel > 50 && Math.random() > 0.6) {
+                // Efetua repasse automático de todo o saldo disponível
                 const novoPag = {
                     id: 'pag_' + Date.now() + Math.random().toString(36).slice(2, 5),
                     clienteId: c.id,
-                    valor: saldoPendente,
+                    valor: saldoDisponivel,
                     data: new Date().toISOString(),
                     chavePix: c.chavePix,
                     status: 'Realizado',
@@ -135,21 +154,25 @@ function startAutomationSimulation() {
                 };
                 pagamentos.push(novoPag);
                 
-                // Atualiza também os produtos vendidos para status "Pago"
+                // Atualiza também os produtos vendidos e liberados para status "Pago"
                 prodsCliente.forEach(p => {
                     if (p.status === 'Vendido') {
-                        p.status = 'Pago';
-                        p.statusHistorico.push({
-                            status: 'Pago',
-                            data: new Date().toISOString(),
-                            obs: 'Automação: Repasse PIX automático realizado.'
-                        });
+                        const dataVenda = p.dataVenda || (p.statusHistorico && p.statusHistorico.find(h => h.status === 'Vendido')?.data) || p.dataEntrada;
+                        const diasDesdeVenda = Math.floor((new Date() - new Date(dataVenda)) / (1000 * 60 * 60 * 24));
+                        if (diasDesdeVenda >= 30) {
+                            p.status = 'Pago';
+                            p.statusHistorico.push({
+                                status: 'Pago',
+                                data: new Date().toISOString(),
+                                obs: 'Automação: Repasse PIX automático realizado para item liberado.'
+                            });
+                        }
                     }
                 });
                 
                 localStorage.setItem(DB_KEYS.PAGAMENTOS, JSON.stringify(pagamentos));
                 localStorage.setItem(DB_KEYS.PRODUTOS, JSON.stringify(produtos));
-                console.log(`[Automação] Repasse automático PIX de ${saldoPendente} realizado para ${c.nome}.`);
+                console.log(`[Automação] Repasse automático PIX de ${saldoDisponivel} realizado para ${c.nome}.`);
             }
         });
     }, 15000);
@@ -379,23 +402,43 @@ const db = {
             // Vendidos (qualquer um vendido, pago ou não)
             const produtosVendidos = produtos.filter(p => p.status === 'Vendido' || p.status === 'Pago');
             
-            // Total gerado para o cliente
-            const totalApostado = produtosVendidos.reduce((acc, p) => {
+            let totalDisponivel = 0;
+            let saldoBloqueado = 0;
+
+            produtosVendidos.forEach(p => {
                 const comissaoLojista = (p.precoVenda * p.comissao) / 100;
                 const valorCliente = p.precoVenda - comissaoLojista;
-                return acc + valorCliente;
-            }, 0);
+
+                if (p.status === 'Pago') {
+                    totalDisponivel += valorCliente;
+                } else if (p.status === 'Vendido') {
+                    const dataVenda = p.dataVenda || (p.statusHistorico && p.statusHistorico.find(h => h.status === 'Vendido')?.data) || p.dataEntrada;
+                    const diasDesdeVenda = Math.floor((new Date() - new Date(dataVenda)) / (1000 * 60 * 60 * 24));
+                    
+                    if (diasDesdeVenda >= 30) {
+                        totalDisponivel += valorCliente;
+                    } else {
+                        saldoBloqueado += valorCliente;
+                    }
+                }
+            });
+
+            // Total gerado para o cliente
+            const totalApostado = totalDisponivel + saldoBloqueado;
 
             // Total que o cliente já recebeu
             const totalPago = pagamentos.reduce((acc, p) => acc + p.valor, 0);
 
             // Saldo atual pendente
             const saldoPendente = totalApostado - totalPago;
+            const saldoDisponivel = Math.max(0, totalDisponivel - totalPago);
 
             return {
                 totalApostado,
                 totalPago,
                 saldoPendente,
+                saldoBloqueado,
+                saldoDisponivel,
                 produtosTotais: produtos.length,
                 produtosAtivos: produtos.filter(p => p.status === 'À Venda').length,
                 produtosTriagem: produtos.filter(p => p.status === 'Em Triagem').length,
