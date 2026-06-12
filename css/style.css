@@ -625,23 +625,148 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-muted);
 }
 
+/* Header Mobile */
+#mobile-header {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 150;
+    box-shadow: var(--shadow-sm);
+}
+
+#mobile-menu-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-fast);
+}
+
+#mobile-menu-toggle:hover {
+    color: var(--accent-gold);
+}
+
+.mobile-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mobile-logo img {
+    height: 36px;
+    width: auto;
+    filter: brightness(0) invert(1);
+}
+
+.mobile-logo span {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+}
+
+#sidebar-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 95;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+    pointer-events: none;
+}
+
+#sidebar-backdrop.active {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+}
+
 /* Responsividade Mobile */
 @media (max-width: 1024px) {
-    .sidebar {
-        display: none; /* Em um cenário real adicionaríamos menu sanduíche */
+    #mobile-header {
+        display: flex;
     }
+    
+    .sidebar {
+        left: -280px;
+        transition: left var(--transition-normal);
+        height: 100vh;
+        z-index: 100;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .sidebar.open {
+        left: 0;
+    }
+    
     .main-content {
         margin-left: 0;
+        margin-top: 60px;
         width: 100%;
-        padding: 24px;
+        padding: 20px 16px;
     }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .page-header .btn {
+        width: 100%;
+    }
+    
     .detail-layout {
         grid-template-columns: 1fr;
+        gap: 24px;
     }
+    
     .form-grid {
         grid-template-columns: 1fr;
     }
+    
     .form-group.full-width {
         grid-column: span 1;
+    }
+    
+    .card-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    .premium-table {
+        min-width: 600px;
+    }
+    
+    .filter-panel {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .search-input, .filter-select {
+        width: 100%;
     }
 }

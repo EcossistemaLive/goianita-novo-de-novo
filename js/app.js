@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Configura o Usuário Logado Mock
     initUserSession();
 
+    // Inicializa a barra de navegação responsiva mobile
+    initMobileNav();
+
     // Roteador Básico baseado em ID da página ou URL hash
     renderActivePage();
 
@@ -692,5 +695,53 @@ function renderFinanceiro() {
             };
             reader.readAsText(file);
         });
+    }
+}
+
+function initMobileNav() {
+    if (!document.getElementById('mobile-header')) {
+        const pathPrefix = window.location.pathname.includes('/pages/') ? '../' : '';
+        
+        const mobileHeader = document.createElement('div');
+        mobileHeader.id = 'mobile-header';
+        mobileHeader.innerHTML = `
+            <button id="mobile-menu-toggle" aria-label="Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="mobile-logo">
+                <img src="${pathPrefix}logo.png" alt="Logo">
+                <span>Goianita</span>
+            </div>
+            <div style="width: 40px;"></div>
+        `;
+        document.body.insertBefore(mobileHeader, document.body.firstChild);
+        
+        const backdrop = document.createElement('div');
+        backdrop.id = 'sidebar-backdrop';
+        document.body.appendChild(backdrop);
+        
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = document.getElementById('mobile-menu-toggle');
+        
+        if (toggleBtn && sidebar) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('open');
+                backdrop.classList.toggle('active');
+            });
+            
+            backdrop.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                backdrop.classList.remove('active');
+            });
+
+            const navLinks = sidebar.querySelectorAll('.nav-menu a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    sidebar.classList.remove('open');
+                    backdrop.classList.remove('active');
+                });
+            });
+        }
     }
 }
