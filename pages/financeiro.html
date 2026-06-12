@@ -74,7 +74,7 @@
                     <h1 class="page-title">Financeiro & Repasses</h1>
                     <p class="page-subtitle">Acompanhamento de fluxo de caixa, comissão de vendas e repasses pendentes via PIX.</p>
                 </div>
-                <div style="display: flex; gap: 12px;">
+                <div class="header-actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
                     <button id="btn-zerar-dados" class="btn btn-secondary" style="border-color: var(--status-devolucao); color: var(--status-devolucao);">
                         <i class="fa-solid fa-trash-can"></i> Zerar Cadastros
                     </button>
@@ -89,7 +89,7 @@
             </header>
 
             <!-- Resumo Financeiro -->
-            <section class="card-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <section class="card-grid">
                 <div class="kpi-card">
                     <div class="kpi-title">Faturamento Total</div>
                     <div class="kpi-value" id="fin-total-vendas">R$ 0,00</div>
