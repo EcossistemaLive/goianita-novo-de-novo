@@ -187,7 +187,7 @@ const db = {
     clientes: {
         getAll: () => JSON.parse(localStorage.getItem(DB_KEYS.CLIENTES) || '[]'),
         getById: (id) => db.clientes.getAll().find(c => c.id === id),
-        save: async (cliente) => {
+        save: async (cliente, skipSync = false) => {
             if (typeof firebase === 'undefined' || !window.GoianitaFirestore) {
                 const clientes = db.clientes.getAll();
                 if (cliente.id) {
@@ -199,7 +199,7 @@ const db = {
                     clientes.push(cliente);
                 }
                 localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify(clientes));
-                db.importExport.syncToGoogleSheets();
+                if (!skipSync) db.importExport.syncToGoogleSheets();
                 return cliente;
             }
 
@@ -238,7 +238,7 @@ const db = {
             else clientesLocais.push(cleanCliente);
             localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify(clientesLocais));
 
-            db.importExport.syncToGoogleSheets();
+            if (!skipSync) db.importExport.syncToGoogleSheets();
             return clienteFinal;
         },
         delete: async (id) => {
@@ -256,7 +256,7 @@ const db = {
         getAll: () => JSON.parse(localStorage.getItem(DB_KEYS.PRODUTOS) || '[]'),
         getById: (id) => db.produtos.getAll().find(p => p.id === id),
         getByCliente: (clienteId) => db.produtos.getAll().filter(p => p.clienteId === clienteId),
-        save: async (produto) => {
+        save: async (produto, skipSync = false) => {
             if (typeof firebase === 'undefined' || !window.GoianitaFirestore) {
                 const produtos = db.produtos.getAll();
                 if (produto.id) {
@@ -342,7 +342,7 @@ const db = {
             else produtosLocais.push(produtoFinal);
             localStorage.setItem(DB_KEYS.PRODUTOS, JSON.stringify(produtosLocais));
 
-            db.importExport.syncToGoogleSheets();
+            if (!skipSync) db.importExport.syncToGoogleSheets();
             return produtoFinal;
         },
         delete: async (id) => {
@@ -504,7 +504,7 @@ const db = {
                 return { success: false, error: e.message };
             }
         },
-        importClientesFromCsv: (csvText) => {
+        importClientesFromCsv: async (csvText) => {
             const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
             if (lines.length < 2) return { success: false, error: "Nenhuma linha de dados encontrada." };
             
@@ -572,13 +572,19 @@ const db = {
                     comissaoPadrao: mapping.comissaoPadrao !== -1 && cols[mapping.comissaoPadrao] ? parseFloat(cols[mapping.comissaoPadrao].replace('%','').replace(',','.')) : 50
                 };
                 
-                db.clientes.save(cliente);
-                importedCount++;
+                try {
+                    await db.clientes.save(cliente, true);
+                    importedCount++;
+                } catch (err) {
+                    errors.push(`Linha ${i + 1}: Erro ao salvar no Firestore: ${err.message}`);
+                }
             }
             
+            // Sincroniza planilha Google apenas uma vez ao final do lote
+            await db.importExport.syncToGoogleSheets();
             return { success: true, count: importedCount, errors: errors };
         },
-        importProdutosFromCsv: (csvText) => {
+        importProdutosFromCsv: async (csvText) => {
             const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
             if (lines.length < 2) return { success: false, error: "Nenhuma linha de dados encontrada." };
             
@@ -680,10 +686,15 @@ const db = {
                     obsInternas: mapping.obsInternas !== -1 ? cols[mapping.obsInternas] : 'Importado via planilha'
                 };
 
-                db.produtos.save(produto);
-                importedCount++;
+                try {
+                    await db.produtos.save(produto, true);
+                    importedCount++;
+                } catch (err) {
+                    errors.push(`Linha ${i + 1}: Erro ao salvar no Firestore: ${err.message}`);
+                }
             }
 
+            await db.importExport.syncToGoogleSheets();
             return { success: true, count: importedCount, errors: errors };
         },
         syncToGoogleSheets: async () => {

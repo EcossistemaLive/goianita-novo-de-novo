@@ -267,18 +267,30 @@
             }
         });
 
-        function executeClientesImport(csvContent) {
-            const res = window.GoianitaDB.importExport.importClientesFromCsv(csvContent);
-            if (res.success) {
-                let msg = `Sucesso! ${res.count} fornecedores cadastrados com sucesso.`;
-                if (res.errors && res.errors.length > 0) {
-                    msg += `\n\nErros ocorridos em algumas linhas:\n` + res.errors.slice(0, 10).join('\n');
-                    if (res.errors.length > 10) msg += `\n...e mais ${res.errors.length - 10} erros.`;
+        async function executeClientesImport(csvContent) {
+            const btn = document.getElementById('btn-do-import-clientes');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "Gravando no Firebase...";
+            
+            try {
+                const res = await window.GoianitaDB.importExport.importClientesFromCsv(csvContent);
+                if (res.success) {
+                    let msg = `Sucesso! ${res.count} fornecedores cadastrados com sucesso.`;
+                    if (res.errors && res.errors.length > 0) {
+                        msg += `\n\nErros ocorridos em algumas linhas:\n` + res.errors.slice(0, 10).join('\n');
+                        if (res.errors.length > 10) msg += `\n...e mais ${res.errors.length - 10} erros.`;
+                    }
+                    alert(msg);
+                    window.location.reload();
+                } else {
+                    alert("Erro ao processar dados: " + res.error);
                 }
-                alert(msg);
-                window.location.reload();
-            } else {
-                alert("Erro ao processar dados: " + res.error);
+            } catch (err) {
+                alert("Erro ao importar: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         }
     </script>
