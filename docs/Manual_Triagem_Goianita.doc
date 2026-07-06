@@ -1,0 +1,124 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+    <meta charset="utf-8">
+    <title>Manual Operacional e Checklist - Casas Goianita</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px; }
+        h1 { color: #d4af37; text-align: center; font-size: 24px; border-bottom: 2px solid #d4af37; padding-bottom: 10px; }
+        h2 { color: #2c3e50; font-size: 18px; margin-top: 25px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        h3 { color: #16a085; font-size: 16px; margin-top: 15px; }
+        p, li { font-size: 14px; margin-bottom: 8px; }
+        .alert { background-color: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .alert-title { font-weight: bold; color: #856404; margin-bottom: 5px; }
+        .checkbox { font-family: monospace; font-size: 16px; color: #555; }
+        hr { border: 0; border-top: 1px dashed #ccc; margin: 30px 0; }
+    </style>
+</head>
+<body>
+
+<h1>📋 MANUAL E CHECKLIST OPERACIONAL<br><small style="color:#555; font-size:16px;">Recebimento, Avaliação e Venda de Peças Usadas - Casas Goianita</small></h1>
+
+<div class="alert">
+    <div class="alert-title">🚨 IMPORTANTE: A Regra de Ouro</div>
+    "Se amanhã alguém disser que a loja arranhou, perdeu, quebrou, trocou, vendeu incompleto ou não avisou sobre o defeito, qual documento, foto, vídeo ou assinatura prova o contrário?" <strong>Se não houver prova, o processo está falho.</strong>
+</div>
+
+<h2>1. REGISTRO FOTOGRÁFICO E PROVA DE ESTADO 📸</h2>
+<p><em>Sem foto, o defeito não existe; sem vídeo, o funcionamento não foi comprovado.</em></p>
+<p><strong>Fotos Individuais Obrigatórias:</strong></p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Frontal, Traseira, Laterais, Superior e Inferior/Base.</li>
+    <li><span class="checkbox">[ ]</span> Marca, assinatura, etiqueta, selo e Inmetro (quando aplicável).</li>
+    <li><span class="checkbox">[ ]</span> Todos os defeitos visíveis (com régua ao lado se relevante).</li>
+    <li><span class="checkbox">[ ]</span> Todas as peças lado a lado (quando for jogo).</li>
+</ul>
+<p><strong>Vídeos Obrigatórios:</strong></p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Vídeo 360º da peça.</li>
+    <li><span class="checkbox">[ ]</span> Vídeo de funcionamento (eletrônicos/eletroportáteis).</li>
+    <li><span class="checkbox">[ ]</span> Vídeo de contagem completa para jogos.</li>
+</ul>
+
+<h2>2. CLASSIFICAÇÃO DE CONSERVAÇÃO (A NOVA ESCALA) 🌟</h2>
+
+<h3>Classe A+ (Excelente / Vitrine Premium)</h3>
+<p><em>Aparência praticamente nova. Apto para presente.</em></p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Sem trincas, lascas, amassados, oxidação ou manchas.</li>
+    <li><span class="checkbox">[ ]</span> Marcas de uso inexistentes ou imperceptíveis.</li>
+</ul>
+
+<h3>Classe A (Muito Bom)</h3>
+<p><em>Produto íntegro, 100% funcional. Sinais leves.</em></p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Microarranhões leves, pequenas marcas superficiais.</li>
+    <li><span class="checkbox">[ ]</span> Sem comprometimento estético, de segurança ou higiene.</li>
+    <li><span class="checkbox">[ ]</span> Sem peças essenciais faltantes.</li>
+</ul>
+
+<h3>Classe B (Bom)</h3>
+<p><em>Produto funcional com sinais de uso evidentes.</em></p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Arranhões moderados, manchas ou desgaste de brilho/pintura.</li>
+    <li><span class="checkbox">[ ]</span> Pode faltar pequena peça <em>não essencial</em>.</li>
+    <li><span class="checkbox">[ ]</span> <strong>Não pode ter:</strong> risco à segurança, trinca estrutural ou defeito elétrico.</li>
+    <li><span class="checkbox">[ ]</span> <em>Exige ressalva clara na etiqueta.</em></li>
+</ul>
+
+<h3>Classe C (Restrito / Outlet)</h3>
+<p><em>Venda somente com ressalva forte.</em></p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Defeito estético relevante ou produto incompleto (mas vendável).</li>
+    <li><span class="checkbox">[ ]</span> Necessita de pequeno reparo.</li>
+</ul>
+
+<h3>🚫 RECUSADO (Não entra na operação)</h3>
+<p><em>Devem ser barrados na triagem imediatamente.</em></p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Trincas estruturais, lascas cortantes, vidro fragilizado.</li>
+    <li><span class="checkbox">[ ]</span> Fio exposto, cheiro de queimado, sem selo Inmetro (quando elétrico).</li>
+    <li><span class="checkbox">[ ]</span> Odor forte, mofo ou contaminação aparente.</li>
+    <li><span class="checkbox">[ ]</span> Suspeita de falsificação ou procedência duvidosa.</li>
+</ul>
+
+<h2>3. CHECKLIST DE CONJUNTOS E JOGOS 🍽️</h2>
+<p><em>Prevenção contra perda de peças.</em></p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Contagem peça a peça com registro exato.</li>
+    <li><span class="checkbox">[ ]</span> Conferência de uniformidade: mesma marca, linha, cor, tom e desgaste.</li>
+    <li><span class="checkbox">[ ]</span> <strong>Declaração de Falta:</strong> Se faltar peça, deve estar explícito no contrato, na etiqueta e no recibo.</li>
+</ul>
+
+<h2>4. HIGIENE E FUNCIONALIDADE 🧼</h2>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Cumpre a função principal? Abre, fecha, veda e encaixa corretamente?</li>
+    <li><span class="checkbox">[ ]</span> Sem odor de mofo, gordura, queimado ou químicos.</li>
+    <li><span class="checkbox">[ ]</span> Identificado o tipo de limpeza necessária (Seca, manual, profunda, polimento).</li>
+</ul>
+
+<h2>5. PRECIFICAÇÃO E RENTABILIDADE 💰</h2>
+<p><em>Preço Sugerido = Preço de Referência × Fator de Estado + Valorização de Marca - Descontos (defeitos).</em></p>
+<p><strong>Fatores de Estado (Base):</strong></p>
+<ul>
+    <li><strong>A+:</strong> 65% a 80% do valor do novo.</li>
+    <li><strong>A:</strong> 50% a 65% do valor do novo.</li>
+    <li><strong>B:</strong> 35% a 50% do valor do novo.</li>
+    <li><strong>C:</strong> 20% a 35% do valor do novo.</li>
+</ul>
+<div class="alert" style="background-color:#f8d7da; border-color:#f5c6cb; color:#721c24;">
+    <strong>PREÇO MÍNIMO VIÁVEL:</strong> Se o preço de venda avaliado não cobrir a comissão, custos de limpeza, impostos e risco, <strong>a peça deve ser recusada</strong> ou renegociada.
+</div>
+
+<h2>6. ETIQUETAGEM FINAL 🏷️</h2>
+<p>Não basta escrever "Usado". A etiqueta deve conter:</p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Classe (A+, A, B ou C) e Descrição objetiva do estado.</li>
+    <li><span class="checkbox">[ ]</span> Defeitos aparentes e peças faltantes.</li>
+    <li><span class="checkbox">[ ]</span> Acessórios inclusos e política de garantia.</li>
+</ul>
+
+<hr>
+<p style="text-align: center; color: #888; font-size: 12px;">Gerado pelo Sistema AIOX Casas Goianita</p>
+
+</body>
+</html>
