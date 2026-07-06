@@ -499,6 +499,8 @@ function renderProdutoNovo() {
                 marca: document.getElementById('prod-marca').value,
                 ean: document.getElementById('prod-ean').value,
                 conservacao: document.getElementById('prod-conservacao').value,
+                defeitosAparentes: document.getElementById('prod-defeitos') ? document.getElementById('prod-defeitos').value : '',
+                pecasFaltantes: document.getElementById('prod-faltantes') ? document.getElementById('prod-faltantes').value : '',
                 peso: parseFloat(document.getElementById('prod-peso').value) || 0,
                 altura: parseFloat(document.getElementById('prod-alt').value) || 0,
                 largura: parseFloat(document.getElementById('prod-larg').value) || 0,
@@ -708,10 +710,14 @@ function renderFinanceiro() {
 function calcularPrecificacaoInteligente() {
     const nome = (document.getElementById('prod-nome')?.value || '').trim();
     const categoria = document.getElementById('prod-cat')?.value || 'Outros';
-    const conservacao = document.getElementById('prod-conservacao')?.value || 'Bom';
+    const conservacao = document.getElementById('prod-conservacao')?.value || 'B';
     const marca = (document.getElementById('prod-marca')?.value || '').trim().toLowerCase();
     const precoSugForecedor = parseFloat(document.getElementById('prod-preco-sug')?.value) || 0;
     const comissao = parseFloat(document.getElementById('prod-comissao')?.value) || 50;
+    
+    const defeitos = (document.getElementById('prod-defeitos')?.value || '').trim();
+    const faltantes = (document.getElementById('prod-faltantes')?.value || '').trim();
+    const penalidadeRisco = (defeitos || faltantes) ? 0.90 : 1.00; // deduz 10% se houver defeito/falta
 
     if (!nome) {
         alert('Por favor, preencha o nome do produto antes de usar a precificação inteligente.');
@@ -734,7 +740,7 @@ function calcularPrecificacaoInteligente() {
     };
 
     // --- 2. MULTIPLICADOR POR ESTADO DE CONSERVAÇÃO ---
-    const multConservacao = { 'Novo': 1.00, 'Excelente': 0.85, 'Bom': 0.70, 'Regular': 0.50 };
+    const multConservacao = { 'A+': 0.80, 'A': 0.65, 'B': 0.50, 'C': 0.35 };
 
     // --- 3. MARCAS PREMIUM (aumentam o valor percebido) ---
     const marcasPremium = [
@@ -754,7 +760,7 @@ function calcularPrecificacaoInteligente() {
 
     // --- 5. CÁLCULO DO PREÇO BASE ---
     const ref = tabelaCategoria[categoria] || tabelaCategoria['Outros'];
-    const fatorConservacao = multConservacao[conservacao] || 0.70;
+    const fatorConservacao = (multConservacao[conservacao] || 0.50) * penalidadeRisco;
 
     // Ponto de partida: mediana da categoria, ajustada por todos os fatores
     let precoBase = ref.med * fatorConservacao * multMarca * multNome;
@@ -786,7 +792,8 @@ function calcularPrecificacaoInteligente() {
     exibirResultadoPrecificacao({
         categoria, conservacao, ehMarcaPremium, fatorConservacao,
         precoFinal, precoMinimo, precoMaximo,
-        comissao, comissaoGoianita, repasseFornecedor, precoSugForecedor
+        comissao, comissaoGoianita, repasseFornecedor, precoSugForecedor,
+        penalidadeRisco
     });
 }
 
@@ -820,10 +827,11 @@ function exibirResultadoPrecificacao(dados) {
     const {
         categoria, conservacao, ehMarcaPremium, fatorConservacao,
         precoFinal, precoMinimo, precoMaximo,
-        comissao, comissaoGoianita, repasseFornecedor, precoSugForecedor
+        comissao, comissaoGoianita, repasseFornecedor, precoSugForecedor,
+        penalidadeRisco
     } = dados;
 
-    const notaConservacao = `Estado "${conservacao}" → ${(fatorConservacao * 100).toFixed(0)}% do valor de referência de mercado`;
+    const notaConservacao = `Estado "${conservacao}" → ${(fatorConservacao * 100).toFixed(0)}% do valor base de mercado ${penalidadeRisco < 1 ? '(penalidade por avaria aplicada)' : ''}`;
     const notaMarca       = ehMarcaPremium ? '⭐ Marca premium reconhecida → +20% no valor percebido' : 'Marca não listada como premium (sem ajuste)';
     const notaSugestao    = precoSugForecedor > 0
         ? `Preço do fornecedor (${formatCurrency(precoSugForecedor)}) usado como âncora (60% do cálculo)`

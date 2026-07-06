@@ -160,17 +160,43 @@
                     <div class="form-group">
                         <label class="form-label" for="prod-conservacao">Estado de Conservação *</label>
                         <select id="prod-conservacao" class="filter-select" style="width: 100%;" required>
-                            <option value="Novo">Novo (Sem uso, na caixa)</option>
-                            <option value="Excelente">Excelente (Sem marcas visíveis)</option>
-                            <option value="Bom">Bom (Pequenas marcas de uso)</option>
-                            <option value="Regular">Regular (Funcional, marcas evidentes)</option>
+                            <option value="A+">A+ (Excelente / Vitrine Premium)</option>
+                            <option value="A">A (Muito Bom / Sinais leves)</option>
+                            <option value="B">B (Bom / Marcas moderadas de uso)</option>
+                            <option value="C">C (Restrito / Outlet com ressalvas)</option>
                         </select>
+                    </div>
+
+                    <!-- Defeitos Aparentes -->
+                    <div class="form-group">
+                        <label class="form-label" for="prod-defeitos">Defeitos Aparentes (Ressalvas)</label>
+                        <input type="text" id="prod-defeitos" class="form-control" placeholder="Ex: Risco na tampa, lasca na borda">
+                    </div>
+
+                    <!-- Peças Faltantes -->
+                    <div class="form-group">
+                        <label class="form-label" for="prod-faltantes">Peças Faltantes (se conjunto)</label>
+                        <input type="text" id="prod-faltantes" class="form-control" placeholder="Ex: Falta 1 xícara do jogo">
                     </div>
 
                     <!-- SKU customizado -->
                     <div class="form-group">
                         <label class="form-label" for="prod-sku">SKU Interno (Opcional)</label>
                         <input type="text" id="prod-sku" class="form-control" placeholder="Em branco para gerar automático">
+                    </div>
+
+                    <div style="grid-column: span 2; border-bottom: 1px solid var(--border-color); margin: 16px 0 8px 0;"></div>
+                    <h4 style="grid-column: span 2; font-family: var(--font-heading);">Provas Obrigatórias (Checklist)</h4>
+
+                    <div class="form-group full-width" style="background: rgba(212, 175, 55, 0.05); padding: 16px; border-radius: var(--radius-md); border-left: 3px solid var(--accent-gold);">
+                        <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; margin-bottom: 12px;">
+                            <input type="checkbox" id="chk-fotos" required style="margin-top: 4px; transform: scale(1.2);">
+                            <span style="font-size: 14px;"><strong>Confirmo que as fotos individuais obrigatórias foram registradas</strong><br><small style="color: var(--text-muted);">Frontal, traseira, laterais, avarias evidentes, marca e lote completo.</small></span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="chk-videos" required style="margin-top: 4px; transform: scale(1.2);">
+                            <span style="font-size: 14px;"><strong>Confirmo que o vídeo 360º/funcionamento foi registrado</strong><br><small style="color: var(--text-muted);">Atestando integridade estrutural ou funcionamento (para elétricos).</small></span>
+                        </label>
                     </div>
 
                     <div style="grid-column: span 2; border-bottom: 1px solid var(--border-color); margin: 16px 0 8px 0;"></div>
