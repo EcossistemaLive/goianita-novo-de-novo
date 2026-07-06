@@ -36,6 +36,9 @@ function initUserSession() {
         } else if (lowerEmail.includes('cleber')) {
             name = "Cléber";
             avatar = "CL";
+        } else if (lowerEmail.includes('goianita')) {
+            name = "Goianita";
+            avatar = "GO";
         } else {
             name = "Administrador";
             avatar = "AD";
