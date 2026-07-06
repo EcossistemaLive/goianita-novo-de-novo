@@ -131,6 +131,8 @@
                 <div class="info-box" id="checklist-box">
                     <h4 class="info-box-title">Checklist de Triagem e Avaliação</h4>
                     <div class="checklist-form" id="prod-checklist-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                        
+                        <h5 style="margin-top: 10px; color: var(--accent-gold); font-size: 13px;">1. AVALIAÇÃO FÍSICA</h5>
                         <label style="display: flex; align-items: center; gap: 8px;">
                             <input type="checkbox" id="chk-integridade">
                             <span>Integridade Estrutural e Visual (sem trincas/lascas)</span>
@@ -151,9 +153,56 @@
                             <input type="checkbox" id="chk-fotos">
                             <span>Fotos e Vídeos anexados à base</span>
                         </label>
-                        <div style="margin-top: 15px;">
+
+                        <h5 style="margin-top: 10px; color: var(--accent-gold); font-size: 13px;">2. DOCUMENTAÇÃO E ACESSÓRIOS</h5>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-nota">
+                            <span>Possui Nota Fiscal Original</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-caixa">
+                            <span>Possui Caixa / Embalagem Original</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-manual">
+                            <span>Possui Manual de Instruções</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-garantia">
+                            <span>Possui Certificado de Garantia</span>
+                        </label>
+
+                        <h5 style="margin-top: 10px; color: var(--accent-gold); font-size: 13px;">3. SEGURANÇA E TERMOS JURÍDICOS</h5>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-procedencia">
+                            <span>Declaração de Procedência Lícita (Proprietário legítimo)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-auth-higiene">
+                            <span>Autorização Expressa para Higienização</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-auth-reparo">
+                            <span>Autorização para Pequenos Reparos / Restauração</span>
+                        </label>
+
+                        <h5 style="margin-top: 10px; color: var(--accent-gold); font-size: 13px;">4. RISCOS (Critérios de Recusa)</h5>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-risco-eletrico">
+                            <span>Produto Sem Risco Elétrico (Cabos íntegros)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-risco-sanitario">
+                            <span>Produto Sem Risco Sanitário (Fácil desinfecção)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-selo">
+                            <span>Eletrodoméstico possui Selo do Inmetro</span>
+                        </label>
+
+                        <div style="margin-top: 20px;">
                             <button type="button" class="btn btn-primary" onclick="salvarChecklistProduto()">
-                                <i class="fa-solid fa-save"></i> Salvar Checklist
+                                <i class="fa-solid fa-save"></i> Salvar Checklist Completo
                             </button>
                         </div>
                     </div>

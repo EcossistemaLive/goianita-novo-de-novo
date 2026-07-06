@@ -583,6 +583,16 @@ function renderProdutoDetalhe() {
         if (document.getElementById('chk-funcionalidade')) document.getElementById('chk-funcionalidade').checked = produto.checklist.funcionalidade || false;
         if (document.getElementById('chk-pecas')) document.getElementById('chk-pecas').checked = produto.checklist.pecas || false;
         if (document.getElementById('chk-fotos')) document.getElementById('chk-fotos').checked = produto.checklist.fotos || false;
+        if (document.getElementById('chk-nota')) document.getElementById('chk-nota').checked = produto.checklist.nota || false;
+        if (document.getElementById('chk-caixa')) document.getElementById('chk-caixa').checked = produto.checklist.caixa || false;
+        if (document.getElementById('chk-manual')) document.getElementById('chk-manual').checked = produto.checklist.manual || false;
+        if (document.getElementById('chk-garantia')) document.getElementById('chk-garantia').checked = produto.checklist.garantia || false;
+        if (document.getElementById('chk-procedencia')) document.getElementById('chk-procedencia').checked = produto.checklist.procedencia || false;
+        if (document.getElementById('chk-auth-higiene')) document.getElementById('chk-auth-higiene').checked = produto.checklist.authHigiene || false;
+        if (document.getElementById('chk-auth-reparo')) document.getElementById('chk-auth-reparo').checked = produto.checklist.authReparo || false;
+        if (document.getElementById('chk-risco-eletrico')) document.getElementById('chk-risco-eletrico').checked = produto.checklist.riscoEletrico || false;
+        if (document.getElementById('chk-risco-sanitario')) document.getElementById('chk-risco-sanitario').checked = produto.checklist.riscoSanitario || false;
+        if (document.getElementById('chk-selo')) document.getElementById('chk-selo').checked = produto.checklist.selo || false;
     }
 
     if (statusSelect) {
@@ -635,7 +645,17 @@ function salvarChecklistProduto() {
         higiene: document.getElementById('chk-higiene')?.checked || false,
         funcionalidade: document.getElementById('chk-funcionalidade')?.checked || false,
         pecas: document.getElementById('chk-pecas')?.checked || false,
-        fotos: document.getElementById('chk-fotos')?.checked || false
+        fotos: document.getElementById('chk-fotos')?.checked || false,
+        nota: document.getElementById('chk-nota')?.checked || false,
+        caixa: document.getElementById('chk-caixa')?.checked || false,
+        manual: document.getElementById('chk-manual')?.checked || false,
+        garantia: document.getElementById('chk-garantia')?.checked || false,
+        procedencia: document.getElementById('chk-procedencia')?.checked || false,
+        authHigiene: document.getElementById('chk-auth-higiene')?.checked || false,
+        authReparo: document.getElementById('chk-auth-reparo')?.checked || false,
+        riscoEletrico: document.getElementById('chk-risco-eletrico')?.checked || false,
+        riscoSanitario: document.getElementById('chk-risco-sanitario')?.checked || false,
+        selo: document.getElementById('chk-selo')?.checked || false
     };
     
     window.GoianitaDB.produtos.save(produto).then(() => {
@@ -683,6 +703,22 @@ function imprimirAvaliacoesCliente() {
                     <li>[${c.funcionalidade ? 'X' : ' '}] Funcionalidade Testada</li>
                     <li>[${c.pecas ? 'X' : ' '}] Peças e Conjuntos completos</li>
                     <li>[${c.fotos ? 'X' : ' '}] Fotos e Vídeos anexados</li>
+                </ul>
+                <ul style="list-style: none; padding-left: 0; margin: 5px 0 0 0; font-size: 14px;">
+                    <li>[${c.nota ? 'X' : ' '}] Possui Nota Fiscal Original</li>
+                    <li>[${c.caixa ? 'X' : ' '}] Possui Caixa/Embalagem Original</li>
+                    <li>[${c.manual ? 'X' : ' '}] Possui Manual de Instruções</li>
+                    <li>[${c.garantia ? 'X' : ' '}] Possui Certificado de Garantia</li>
+                </ul>
+                <ul style="list-style: none; padding-left: 0; margin: 5px 0 0 0; font-size: 14px;">
+                    <li>[${c.procedencia ? 'X' : ' '}] Declaração de Procedência Lícita</li>
+                    <li>[${c.authHigiene ? 'X' : ' '}] Autorização para Higienização</li>
+                    <li>[${c.authReparo ? 'X' : ' '}] Autorização para Pequenos Reparos</li>
+                </ul>
+                <ul style="list-style: none; padding-left: 0; margin: 5px 0 0 0; font-size: 14px;">
+                    <li>[${c.riscoEletrico ? 'X' : ' '}] Sem Risco Elétrico</li>
+                    <li>[${c.riscoSanitario ? 'X' : ' '}] Sem Risco Sanitário</li>
+                    <li>[${c.selo ? 'X' : ' '}] Selo Inmetro</li>
                 </ul>
                 <p style="margin-top: 10px; font-size: 13px; color: #555;"><strong>Defeitos / Faltantes:</strong> ${p.defeitosAparentes || ''} ${p.pecasFaltantes || ''}</p>
             </div>
