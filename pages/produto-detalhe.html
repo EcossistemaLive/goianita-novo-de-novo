@@ -127,7 +127,40 @@
                     </div>
                 </div>
 
-                <!-- Coluna Lateral (Gestão de Status e Timeline) -->
+                <!-- Checklist de Avaliação -->
+                <div class="info-box" id="checklist-box">
+                    <h4 class="info-box-title">Checklist de Triagem e Avaliação</h4>
+                    <div class="checklist-form" id="prod-checklist-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-integridade">
+                            <span>Integridade Estrutural e Visual (sem trincas/lascas)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-higiene">
+                            <span>Higiene e Ausência de Odores</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-funcionalidade">
+                            <span>Funcionalidade Testada (para elétricos/mecânicos)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-pecas">
+                            <span>Peças e Conjuntos Inspecionados completos</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="chk-fotos">
+                            <span>Fotos e Vídeos anexados à base</span>
+                        </label>
+                        <div style="margin-top: 15px;">
+                            <button type="button" class="btn btn-primary" onclick="salvarChecklistProduto()">
+                                <i class="fa-solid fa-save"></i> Salvar Checklist
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Lateral (Gestão de Status e Timeline) -->
                 <div class="detail-sidebar">
                     <!-- Gestão de Status Rápida -->
                     <div class="info-box">

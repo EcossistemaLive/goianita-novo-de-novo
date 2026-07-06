@@ -575,6 +575,16 @@ function renderProdutoDetalhe() {
     
     // Seletor de status rápido
     const statusSelect = document.getElementById('update-status-select');
+    
+    // Checklist de Avaliação (se existir)
+    if (produto.checklist) {
+        if (document.getElementById('chk-integridade')) document.getElementById('chk-integridade').checked = produto.checklist.integridade || false;
+        if (document.getElementById('chk-higiene')) document.getElementById('chk-higiene').checked = produto.checklist.higiene || false;
+        if (document.getElementById('chk-funcionalidade')) document.getElementById('chk-funcionalidade').checked = produto.checklist.funcionalidade || false;
+        if (document.getElementById('chk-pecas')) document.getElementById('chk-pecas').checked = produto.checklist.pecas || false;
+        if (document.getElementById('chk-fotos')) document.getElementById('chk-fotos').checked = produto.checklist.fotos || false;
+    }
+
     if (statusSelect) {
         statusSelect.value = produto.status;
         statusSelect.addEventListener('change', () => {
@@ -609,6 +619,94 @@ function renderProdutoDetalhe() {
             </div>
         `).join('');
     }
+}
+
+// --- FINANCEIRO GERAL ---
+function salvarChecklistProduto() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    if (!id) return;
+    
+    const produto = window.GoianitaDB.produtos.getById(id);
+    if (!produto) return;
+    
+    produto.checklist = {
+        integridade: document.getElementById('chk-integridade')?.checked || false,
+        higiene: document.getElementById('chk-higiene')?.checked || false,
+        funcionalidade: document.getElementById('chk-funcionalidade')?.checked || false,
+        pecas: document.getElementById('chk-pecas')?.checked || false,
+        fotos: document.getElementById('chk-fotos')?.checked || false
+    };
+    
+    window.GoianitaDB.produtos.save(produto).then(() => {
+        alert("Checklist salvo com sucesso!");
+    }).catch(err => {
+        alert("Erro ao salvar checklist: " + err.message);
+    });
+}
+
+function imprimirAvaliacoesCliente() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    if (!id) return;
+    
+    const cliente = window.GoianitaDB.clientes.getById(id);
+    const produtos = window.GoianitaDB.produtos.getByCliente(id);
+    
+    if (!produtos || produtos.length === 0) {
+        alert("Nenhum produto cadastrado para este fornecedor.");
+        return;
+    }
+    
+    // Cria um contêiner invisível apenas para a impressão
+    const printArea = document.createElement('div');
+    printArea.id = 'print-area';
+    
+    let html = `
+        <div class="print-header">
+            <h2>Termo de Triagem e Avaliação de Produtos</h2>
+            <p><strong>Fornecedor:</strong> ${cliente.nome} | <strong>CPF:</strong> ${cliente.cpf}</p>
+            <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+            <hr>
+        </div>
+        <div class="print-body">
+    `;
+    
+    produtos.forEach(p => {
+        const c = p.checklist || {};
+        html += `
+            <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                <h4 style="margin: 0 0 10px 0;">[${p.sku}] ${p.nome} - R$ ${p.precoVenda.toFixed(2)}</h4>
+                <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 14px;">
+                    <li>[${c.integridade ? 'X' : ' '}] Integridade Estrutural e Visual</li>
+                    <li>[${c.higiene ? 'X' : ' '}] Higiene e Ausência de Odores</li>
+                    <li>[${c.funcionalidade ? 'X' : ' '}] Funcionalidade Testada</li>
+                    <li>[${c.pecas ? 'X' : ' '}] Peças e Conjuntos completos</li>
+                    <li>[${c.fotos ? 'X' : ' '}] Fotos e Vídeos anexados</li>
+                </ul>
+                <p style="margin-top: 10px; font-size: 13px; color: #555;"><strong>Defeitos / Faltantes:</strong> ${p.defeitosAparentes || ''} ${p.pecasFaltantes || ''}</p>
+            </div>
+        `;
+    });
+    
+    html += `
+        </div>
+        <div class="print-footer" style="margin-top: 50px; text-align: center;">
+            <p>Declaro ciência e concordância com a avaliação das peças acima descritas.</p>
+            <br><br>
+            <p>_______________________________________________________</p>
+            <p><strong>${cliente.nome}</strong></p>
+            <p>Assinatura do Fornecedor</p>
+        </div>
+    `;
+    
+    printArea.innerHTML = html;
+    document.body.appendChild(printArea);
+    
+    window.print();
+    
+    // Remove após impressão
+    document.body.removeChild(printArea);
 }
 
 // --- FINANCEIRO GERAL ---
