@@ -39,7 +39,32 @@
     <li><span class="checkbox">[ ]</span> Vídeo de contagem completa para jogos.</li>
 </ul>
 
-<h2>2. CLASSIFICAÇÃO DE CONSERVAÇÃO (A NOVA ESCALA) 🌟</h2>
+<h2>2. TRIAGEM AVANÇADA (Entrevista com o Fornecedor) 🕵️</h2>
+<p><em>Perguntas obrigatórias para proteger a loja, alinhar expectativas e agregar valor.</em></p>
+<p><strong>Procedência e Autenticidade:</strong></p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Qual a origem do item? (Herança, presente, antiquário, loja oficial).</li>
+    <li><span class="checkbox">[ ]</span> Para itens premium/luxo: Possui certificado de autenticidade, selo ou embalagem original?</li>
+    <li><span class="checkbox">[ ]</span> Para metais nobres: Foi verificado se é prata maciça, banho ou prateado? Há carimbo de contraste?</li>
+</ul>
+<p><strong>Histórico Oculto e Hábitos:</strong></p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> A peça já passou por algum tipo de reparo, solda, polimento abrasivo ou restauração?</li>
+    <li><span class="checkbox">[ ]</span> Era utilizada no dia a dia ou ficava apenas em exposição? Era lavada em lava-louças?</li>
+    <li><span class="checkbox">[ ]</span> (Eletrodomésticos): Qual foi a última vez que este produto foi ligado na tomada?</li>
+</ul>
+<p><strong>Alinhamento Comercial:</strong></p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Qual o valor mínimo esperado (piso) livre de comissões por essa peça? <em>(Anotar na ficha)</em></li>
+    <li><span class="checkbox">[ ]</span> O cliente está ciente da regra de 'Desova' (Liquidação com desconto após 90 dias)?</li>
+    <li><span class="checkbox">[ ]</span> O cliente declarou estar ciente de que defeitos ocultos revelados <strong>após</strong> a higienização isentam a loja de responsabilidade por danos pré-existentes?</li>
+</ul>
+<p><strong>Pitch de Vendas (Opcional, mas valioso):</strong></p>
+<ul style="list-style-type: none;">
+    <li><span class="checkbox">[ ]</span> Tem alguma história ou curiosidade interessante sobre essa peça para valorizar o anúncio?</li>
+</ul>
+
+<h2>3. CLASSIFICAÇÃO DE CONSERVAÇÃO (A NOVA ESCALA) 🌟</h2>
 
 <h3>Classe A+ (Excelente / Vitrine Premium)</h3>
 <p><em>Aparência praticamente nova. Apto para presente.</em></p>
@@ -81,7 +106,7 @@
     <li><span class="checkbox">[ ]</span> Suspeita de falsificação ou procedência duvidosa.</li>
 </ul>
 
-<h2>3. CHECKLIST DE CONJUNTOS E JOGOS 🍽️</h2>
+<h2>4. CHECKLIST DE CONJUNTOS E JOGOS 🍽️</h2>
 <p><em>Prevenção contra perda de peças.</em></p>
 <ul style="list-style-type: none;">
     <li><span class="checkbox">[ ]</span> Contagem peça a peça com registro exato.</li>
@@ -89,14 +114,14 @@
     <li><span class="checkbox">[ ]</span> <strong>Declaração de Falta:</strong> Se faltar peça, deve estar explícito no contrato, na etiqueta e no recibo.</li>
 </ul>
 
-<h2>4. HIGIENE E FUNCIONALIDADE 🧼</h2>
+<h2>5. HIGIENE E FUNCIONALIDADE 🧼</h2>
 <ul style="list-style-type: none;">
     <li><span class="checkbox">[ ]</span> Cumpre a função principal? Abre, fecha, veda e encaixa corretamente?</li>
     <li><span class="checkbox">[ ]</span> Sem odor de mofo, gordura, queimado ou químicos.</li>
     <li><span class="checkbox">[ ]</span> Identificado o tipo de limpeza necessária (Seca, manual, profunda, polimento).</li>
 </ul>
 
-<h2>5. PRECIFICAÇÃO E RENTABILIDADE 💰</h2>
+<h2>6. PRECIFICAÇÃO E RENTABILIDADE 💰</h2>
 <p><em>Preço Sugerido = Preço de Referência × Fator de Estado + Valorização de Marca - Descontos (defeitos).</em></p>
 <p><strong>Fatores de Estado (Base):</strong></p>
 <ul>
@@ -109,7 +134,7 @@
     <strong>PREÇO MÍNIMO VIÁVEL:</strong> Se o preço de venda avaliado não cobrir a comissão, custos de limpeza, impostos e risco, <strong>a peça deve ser recusada</strong> ou renegociada.
 </div>
 
-<h2>6. ETIQUETAGEM FINAL 🏷️</h2>
+<h2>7. ETIQUETAGEM FINAL 🏷️</h2>
 <p>Não basta escrever "Usado". A etiqueta deve conter:</p>
 <ul style="list-style-type: none;">
     <li><span class="checkbox">[ ]</span> Classe (A+, A, B ou C) e Descrição objetiva do estado.</li>

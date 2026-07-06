@@ -22,7 +22,30 @@
 
 ---
 
-## 2. CLASSIFICAÇÃO DE CONSERVAÇÃO (A NOVA ESCALA) 🌟
+## 2. TRIAGEM AVANÇADA (Entrevista com o Fornecedor) 🕵️
+*Perguntas obrigatórias para proteger a loja, alinhar expectativas e agregar valor.*
+
+**Procedência e Autenticidade:**
+- [ ] Qual a origem do item? (Herança, presente, antiquário, loja oficial).
+- [ ] Para itens premium/luxo: Possui certificado de autenticidade, selo ou embalagem original?
+- [ ] Para metais nobres: Foi verificado se é prata maciça, banho ou prateado? Há carimbo de contraste?
+
+**Histórico Oculto e Hábitos:**
+- [ ] A peça já passou por algum tipo de reparo, solda, polimento abrasivo ou restauração?
+- [ ] Era utilizada no dia a dia ou ficava apenas em exposição? Era lavada em lava-louças?
+- [ ] (Eletrodomésticos): Qual foi a última vez que este produto foi ligado na tomada?
+
+**Alinhamento Comercial:**
+- [ ] Qual o valor mínimo esperado (piso) livre de comissões por essa peça? *(Anotar na ficha)*
+- [ ] O cliente está ciente da regra de 'Desova' (Liquidação com desconto após 90 dias)?
+- [ ] O cliente declarou estar ciente de que defeitos ocultos revelados **após** a higienização isentam a loja de responsabilidade por danos pré-existentes?
+
+**Pitch de Vendas (Opcional, mas valioso):**
+- [ ] Tem alguma história ou curiosidade interessante sobre essa peça para valorizar o anúncio?
+
+---
+
+## 3. CLASSIFICAÇÃO DE CONSERVAÇÃO (A NOVA ESCALA) 🌟
 
 ### Classe A+ (Excelente / Vitrine Premium)
 *Aparência praticamente nova. Apto para presente.*
@@ -56,7 +79,7 @@
 
 ---
 
-## 3. CHECKLIST DE CONJUNTOS E JOGOS 🍽️
+## 4. CHECKLIST DE CONJUNTOS E JOGOS 🍽️
 *Prevenção contra perda de peças.*
 
 - [ ] Contagem peça a peça com registro exato.
@@ -65,14 +88,14 @@
 
 ---
 
-## 4. HIGIENE E FUNCIONALIDADE 🧼
+## 5. HIGIENE E FUNCIONALIDADE 🧼
 - [ ] Cumpre a função principal? Abre, fecha, veda e encaixa corretamente?
 - [ ] Sem odor de mofo, gordura, queimado ou químicos.
 - [ ] Identificado o tipo de limpeza necessária (Seca, manual, profunda, polimento).
 
 ---
 
-## 5. PRECIFICAÇÃO E RENTABILIDADE 💰
+## 6. PRECIFICAÇÃO E RENTABILIDADE 💰
 *Preço Sugerido = Preço de Referência × Fator de Estado + Valorização de Marca - Descontos (defeitos).*
 
 **Fatores de Estado (Base):**
@@ -86,7 +109,7 @@
 
 ---
 
-## 6. ETIQUETAGEM FINAL 🏷️
+## 7. ETIQUETAGEM FINAL 🏷️
 Não basta escrever "Usado". A etiqueta deve conter:
 - [ ] Classe (A+, A, B ou C) e Descrição objetiva do estado.
 - [ ] Defeitos aparentes e peças faltantes.
