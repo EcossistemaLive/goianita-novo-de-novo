@@ -74,9 +74,12 @@
                     <h1 class="page-title" id="cli-detalhe-nome">Nome do Fornecedor</h1>
                     <p class="page-subtitle">Extrato e ficha cadastral completa do fornecedor.</p>
                 </div>
-                <div style="display: flex; gap: 12px;">
-                    <button type="button" class="btn btn-primary" onclick="imprimirAvaliacoesCliente()">
-                        <i class="fa-solid fa-print"></i> Imprimir Avaliações
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-primary" onclick="imprimirContratoCliente()">
+                        <i class="fa-solid fa-file-signature"></i> Imprimir Contrato
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="imprimirAvaliacoesCliente()">
+                        <i class="fa-solid fa-print"></i> Ficha (Simples)
                     </button>
                     <a href="clientes.html" class="btn btn-secondary">
                         <i class="fa-solid fa-arrow-left"></i> Voltar à Lista

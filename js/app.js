@@ -745,6 +745,121 @@ function imprimirAvaliacoesCliente() {
     document.body.removeChild(printArea);
 }
 
+function imprimirContratoCliente() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    if (!id) return;
+    
+    const cliente = window.GoianitaDB.clientes.getById(id);
+    const produtos = window.GoianitaDB.produtos.getByCliente(id);
+    
+    if (!produtos || produtos.length === 0) {
+        alert("Nenhum produto cadastrado para este fornecedor. O contrato exige ao menos um produto.");
+        return;
+    }
+    
+    const printArea = document.createElement('div');
+    printArea.id = 'print-area';
+    
+    let html = `
+        <div class="print-header">
+            <h2 style="text-align: center; margin-bottom: 20px;">CONTRATO DE CONSIGNAÇÃO DE PEÇAS E UTILIDADES</h2>
+            
+            <h3 style="font-size: 14px; margin-top: 20px;">QUALIFICAÇÃO DAS PARTES</h3>
+            <p style="font-size: 12px; text-align: justify; margin-bottom: 10px;"><strong>CONSIGNATÁRIA:</strong> VIRTUAL DISTRIBUIDORA DE UTILIDADES DOMÉSTICAS LTDA (CASAS GOIANITA), sociedade limitada, inscrita no CNPJ sob o nº 11.316.256/0001-29, situada na Rua 85, nº 369, Quadra F19, Lote 45, Setor Sul, Goiânia/GO, CEP: 74080-010.</p>
+            <p style="font-size: 12px; text-align: justify; margin-bottom: 10px;"><strong>CONSIGNANTE:</strong> ${cliente.nome}, inscrito(a) no CPF/CNPJ sob o nº ${cliente.cpf}, telefone ${cliente.telefone}, e-mail ${cliente.email}.</p>
+            <p style="font-size: 12px; text-align: justify; margin-bottom: 20px;">As partes acima qualificadas celebram, entre si, o presente instrumento particular, que será regido pela legislação aplicável, em especial, pelos artigos 534 e seguintes do Código Civil Brasileiro e pelas cláusulas e disposições seguintes:</p>
+
+            <h3 style="font-size: 14px; margin-top: 20px;">CLÁUSULAS CONTRATUAIS RESUMIDAS</h3>
+            <div style="font-size: 10px; text-align: justify;">
+                <p><strong>Cláusula 1ª</strong> – Considera-se CONSIGNANTE a pessoa que deixa bens sob os cuidados da CONSIGNATÁRIA para comercialização e repasse dos recursos líquidos.</p>
+                <p><em>Parágrafo Único.</em> O(A) CONSIGNANTE autoriza o uso de imagens dos bens para fins de divulgação e publicidade.</p>
+                <p><strong>Cláusula 2ª</strong> – O(A) CONSIGNANTE responsabiliza-se pela origem e autenticidade dos bens móveis deixados em consignação.</p>
+                <p><em>§1º.</em> Constatada falsificação, o(a) CONSIGNANTE responderá por perdas e danos e arcará com multa.</p>
+                <p><em>§2º.</em> A avaliação será realizada com exclusividade pela CONSIGNATÁRIA, com base no mercado e estado do produto.</p>
+                <p><em>§3º.</em> A CONSIGNATÁRIA poderá recusar a recepção de bens que considere não vendáveis.</p>
+                <p><em>§4º.</em> Peças reprovadas devem ser retiradas em até 7 dias úteis, sob pena de doação ou bazar beneficente.</p>
+                <p><em>§5º.</em> A doação poderá ser realizada em favor de instituições de caridade parceiras.</p>
+                <p><strong>Cláusula 3ª</strong> – A CONSIGNATÁRIA responsabiliza-se pela guarda dos bens, exceto caso fortuito ou força maior.</p>
+                <p><strong>Cláusula 4ª</strong> – Os bens serão expostos à venda conforme organização interna da CONSIGNATÁRIA (lojas, e-commerce, eventos).</p>
+                <p><strong>Cláusula 5ª</strong> – Realizada a venda, caberá ao(à) CONSIGNANTE o recebimento do valor líquido acordado.</p>
+                <p><em>§1º.</em> O valor líquido devido ficará bloqueado durante 30 dias após a venda, disponível para retirada após este prazo.</p>
+                <p><em>§2º e §3º.</em> O pagamento poderá ser feito via PIX (em até 7 dias úteis após requisição) ou revertido em crédito em loja.</p>
+                <p><strong>Cláusula 6ª</strong> – A CONSIGNATÁRIA reserva-se o direito de devolver produtos a qualquer tempo. Não retirado em 30 dias após aviso, o bem poderá ser doado.</p>
+                <p><strong>Cláusula 7ª</strong> – Se não vendido em 90 dias, a CONSIGNATÁRIA pode reduzir o valor do bem em até 50% para aumentar a liquidez.</p>
+                <p><strong>Cláusula 8ª</strong> – O(A) CONSIGNANTE que desejar retirar peças antes do prazo deverá avisar com 30 dias de antecedência.</p>
+                <p><strong>Cláusula 9ª a 16ª</strong> – Rescisão, LGPD (uso de dados para o contrato), confidencialidade, direitos de marca, e Foro de Goiânia/GO.</p>
+            </div>
+        </div>
+        <br><hr>
+        <div class="print-body" style="page-break-before: always;">
+            <h3 style="text-align: center; margin-bottom: 20px;">ANEXO I - TERMO DE TRIAGEM E PRODUTOS ACEITOS</h3>
+            <p style="font-size: 12px; margin-bottom: 20px;">O(A) CONSIGNANTE declara ciência e concorda com a avaliação, precificação, estado de conservação, defeitos apontados e lista de acessórios descritos nos itens abaixo, submetidos e aprovados pela triagem da CONSIGNATÁRIA na presente data:</p>
+    `;
+    
+    produtos.forEach(p => {
+        const c = p.checklist || {};
+        html += `
+            <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                <h4 style="margin: 0 0 10px 0; font-size: 14px;">[${p.sku}] ${p.nome} - Valor Líquido de Repasse: R$ ${(p.precoVenda * (1 - p.comissao/100)).toFixed(2)}</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 11px;">
+                        <li>[${c.integridade ? 'X' : ' '}] Integridade Estrutural</li>
+                        <li>[${c.higiene ? 'X' : ' '}] Higiene / Odores</li>
+                        <li>[${c.funcionalidade ? 'X' : ' '}] Funcional. Testada</li>
+                        <li>[${c.pecas ? 'X' : ' '}] Peças Completas</li>
+                        <li>[${c.fotos ? 'X' : ' '}] Fotos Anexadas</li>
+                    </ul>
+                    <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 11px;">
+                        <li>[${c.nota ? 'X' : ' '}] NF Original</li>
+                        <li>[${c.caixa ? 'X' : ' '}] Caixa Original</li>
+                        <li>[${c.manual ? 'X' : ' '}] Manual Instruções</li>
+                        <li>[${c.garantia ? 'X' : ' '}] Cert. Garantia</li>
+                    </ul>
+                    <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 11px;">
+                        <li>[${c.procedencia ? 'X' : ' '}] Proc. Lícita</li>
+                        <li>[${c.authHigiene ? 'X' : ' '}] Aut. Higienização</li>
+                        <li>[${c.authReparo ? 'X' : ' '}] Aut. Reparos</li>
+                    </ul>
+                    <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 11px;">
+                        <li>[${c.riscoEletrico ? 'X' : ' '}] S/ Risco Elétrico</li>
+                        <li>[${c.riscoSanitario ? 'X' : ' '}] S/ Risco Sanitário</li>
+                        <li>[${c.selo ? 'X' : ' '}] Selo Inmetro</li>
+                    </ul>
+                </div>
+                <p style="margin-top: 8px; font-size: 11px; color: #333;"><strong>Ressalvas/Faltantes:</strong> ${p.defeitosAparentes || 'Nenhuma ressalva.'} ${p.pecasFaltantes || ''}</p>
+            </div>
+        `;
+    });
+    
+    html += `
+        </div>
+        <div class="print-footer" style="margin-top: 50px;">
+            <p style="text-align: center; font-size: 13px;">Por estarem justos e contratados, assinam o presente termo de consignação e avaliação.</p>
+            <p style="text-align: center; font-size: 13px; margin-top: 10px;">Goiânia/GO, ${new Date().toLocaleDateString('pt-BR')}</p>
+            <div style="display: flex; justify-content: space-around; margin-top: 60px;">
+                <div style="text-align: center;">
+                    <p>_______________________________________________________</p>
+                    <p><strong>${cliente.nome}</strong></p>
+                    <p style="font-size: 12px;">CONSIGNANTE (CPF/CNPJ: ${cliente.cpf})</p>
+                </div>
+                <div style="text-align: center;">
+                    <p>_______________________________________________________</p>
+                    <p><strong>Casas Goianita (Virtual Ltda)</strong></p>
+                    <p style="font-size: 12px;">CONSIGNATÁRIA</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    printArea.innerHTML = html;
+    document.body.appendChild(printArea);
+    
+    window.print();
+    
+    document.body.removeChild(printArea);
+}
+
 // --- FINANCEIRO GERAL ---
 function renderFinanceiro() {
     if (!window.GoianitaDB) return;
