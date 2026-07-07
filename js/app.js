@@ -675,8 +675,22 @@ function renderProdutoDetalhe() {
                     const file = files[i];
                     const fileName = `${Date.now()}_${file.name}`;
                     const storageRef = window.GoianitaStorage.ref(`produtos/${produto.id}/${fileName}`);
-                    const snapshot = await storageRef.put(file);
-                    const downloadUrl = await snapshot.ref.getDownloadURL();
+                    
+                    const uploadTask = storageRef.put(file);
+                    
+                    // Monitorar o progresso
+                    uploadTask.on('state_changed', 
+                        (snapshot) => {
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            statusLabel.textContent = `Enviando arquivo ${i + 1} de ${files.length}... ${Math.round(progress)}%`;
+                        },
+                        (error) => {
+                            throw error;
+                        }
+                    );
+
+                    await uploadTask;
+                    const downloadUrl = await storageRef.getDownloadURL();
                     
                     produto.midias.push({
                         url: downloadUrl,
