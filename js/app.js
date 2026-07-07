@@ -775,7 +775,7 @@ function salvarChecklistProduto() {
     produto.megaChecklist = megaChecklist;
     
     window.GoianitaDB.produtos.save(produto).then(() => {
-        alert("Mega Checklist salvo com sucesso!");
+        alert("Checklist salvo com sucesso!");
     }).catch(err => {
         alert("Erro ao salvar checklist: " + err.message);
     });
