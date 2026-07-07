@@ -577,22 +577,13 @@ function renderProdutoDetalhe() {
     const statusSelect = document.getElementById('update-status-select');
     
     // Checklist de Avaliação (se existir)
-    if (produto.checklist) {
-        if (document.getElementById('chk-integridade')) document.getElementById('chk-integridade').checked = produto.checklist.integridade || false;
-        if (document.getElementById('chk-higiene')) document.getElementById('chk-higiene').checked = produto.checklist.higiene || false;
-        if (document.getElementById('chk-funcionalidade')) document.getElementById('chk-funcionalidade').checked = produto.checklist.funcionalidade || false;
-        if (document.getElementById('chk-pecas')) document.getElementById('chk-pecas').checked = produto.checklist.pecas || false;
-        if (document.getElementById('chk-fotos')) document.getElementById('chk-fotos').checked = produto.checklist.fotos || false;
-        if (document.getElementById('chk-nota')) document.getElementById('chk-nota').checked = produto.checklist.nota || false;
-        if (document.getElementById('chk-caixa')) document.getElementById('chk-caixa').checked = produto.checklist.caixa || false;
-        if (document.getElementById('chk-manual')) document.getElementById('chk-manual').checked = produto.checklist.manual || false;
-        if (document.getElementById('chk-garantia')) document.getElementById('chk-garantia').checked = produto.checklist.garantia || false;
-        if (document.getElementById('chk-procedencia')) document.getElementById('chk-procedencia').checked = produto.checklist.procedencia || false;
-        if (document.getElementById('chk-auth-higiene')) document.getElementById('chk-auth-higiene').checked = produto.checklist.authHigiene || false;
-        if (document.getElementById('chk-auth-reparo')) document.getElementById('chk-auth-reparo').checked = produto.checklist.authReparo || false;
-        if (document.getElementById('chk-risco-eletrico')) document.getElementById('chk-risco-eletrico').checked = produto.checklist.riscoEletrico || false;
-        if (document.getElementById('chk-risco-sanitario')) document.getElementById('chk-risco-sanitario').checked = produto.checklist.riscoSanitario || false;
-        if (document.getElementById('chk-selo')) document.getElementById('chk-selo').checked = produto.checklist.selo || false;
+    if (produto.megaChecklist) {
+        const inputs = document.querySelectorAll('.mega-input');
+        inputs.forEach(inp => {
+            const label = inp.getAttribute('data-label');
+            const found = produto.megaChecklist.find(item => item.label === label);
+            inp.checked = !!found;
+        });
     }
 
     if (statusSelect) {
@@ -640,26 +631,21 @@ function salvarChecklistProduto() {
     const produto = window.GoianitaDB.produtos.getById(id);
     if (!produto) return;
     
-    produto.checklist = {
-        integridade: document.getElementById('chk-integridade')?.checked || false,
-        higiene: document.getElementById('chk-higiene')?.checked || false,
-        funcionalidade: document.getElementById('chk-funcionalidade')?.checked || false,
-        pecas: document.getElementById('chk-pecas')?.checked || false,
-        fotos: document.getElementById('chk-fotos')?.checked || false,
-        nota: document.getElementById('chk-nota')?.checked || false,
-        caixa: document.getElementById('chk-caixa')?.checked || false,
-        manual: document.getElementById('chk-manual')?.checked || false,
-        garantia: document.getElementById('chk-garantia')?.checked || false,
-        procedencia: document.getElementById('chk-procedencia')?.checked || false,
-        authHigiene: document.getElementById('chk-auth-higiene')?.checked || false,
-        authReparo: document.getElementById('chk-auth-reparo')?.checked || false,
-        riscoEletrico: document.getElementById('chk-risco-eletrico')?.checked || false,
-        riscoSanitario: document.getElementById('chk-risco-sanitario')?.checked || false,
-        selo: document.getElementById('chk-selo')?.checked || false
-    };
+    const inputs = document.querySelectorAll('.mega-input');
+    const megaChecklist = [];
+    inputs.forEach(inp => {
+        if (inp.checked) {
+            megaChecklist.push({
+                category: inp.getAttribute('data-category'),
+                label: inp.getAttribute('data-label')
+            });
+        }
+    });
+    
+    produto.megaChecklist = megaChecklist;
     
     window.GoianitaDB.produtos.save(produto).then(() => {
-        alert("Checklist salvo com sucesso!");
+        alert("Mega Checklist salvo com sucesso!");
     }).catch(err => {
         alert("Erro ao salvar checklist: " + err.message);
     });
@@ -693,33 +679,31 @@ function imprimirAvaliacoesCliente() {
     `;
     
     produtos.forEach(p => {
-        const c = p.checklist || {};
+        let checklistHtml = '';
+        if (p.megaChecklist && p.megaChecklist.length > 0) {
+            const grouped = {};
+            p.megaChecklist.forEach(item => {
+                if(!grouped[item.category]) grouped[item.category] = [];
+                grouped[item.category].push(item.label);
+            });
+            for(const cat in grouped) {
+                checklistHtml += `<p style="margin: 8px 0 2px 0; font-size: 12px; font-weight: bold; color: #444;">${cat}</p>`;
+                checklistHtml += `<ul style="list-style: none; padding-left: 0; margin: 0; font-size: 11px;">`;
+                grouped[cat].forEach(label => {
+                    checklistHtml += `<li><i class="fa-solid fa-check" style="color: #666; margin-right: 4px;"></i> ${label}</li>`;
+                });
+                checklistHtml += `</ul>`;
+            }
+        } else {
+            checklistHtml = '<p style="font-size: 12px; font-style: italic; color: #999;">Checklist não preenchido.</p>';
+        }
+
         html += `
             <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
                 <h4 style="margin: 0 0 10px 0;">[${p.sku}] ${p.nome} - R$ ${p.precoVenda.toFixed(2)}</h4>
-                <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 14px;">
-                    <li>[${c.integridade ? 'X' : ' '}] Integridade Estrutural e Visual</li>
-                    <li>[${c.higiene ? 'X' : ' '}] Higiene e Ausência de Odores</li>
-                    <li>[${c.funcionalidade ? 'X' : ' '}] Funcionalidade Testada</li>
-                    <li>[${c.pecas ? 'X' : ' '}] Peças e Conjuntos completos</li>
-                    <li>[${c.fotos ? 'X' : ' '}] Fotos e Vídeos anexados</li>
-                </ul>
-                <ul style="list-style: none; padding-left: 0; margin: 5px 0 0 0; font-size: 14px;">
-                    <li>[${c.nota ? 'X' : ' '}] Possui Nota Fiscal Original</li>
-                    <li>[${c.caixa ? 'X' : ' '}] Possui Caixa/Embalagem Original</li>
-                    <li>[${c.manual ? 'X' : ' '}] Possui Manual de Instruções</li>
-                    <li>[${c.garantia ? 'X' : ' '}] Possui Certificado de Garantia</li>
-                </ul>
-                <ul style="list-style: none; padding-left: 0; margin: 5px 0 0 0; font-size: 14px;">
-                    <li>[${c.procedencia ? 'X' : ' '}] Declaração de Procedência Lícita</li>
-                    <li>[${c.authHigiene ? 'X' : ' '}] Autorização para Higienização</li>
-                    <li>[${c.authReparo ? 'X' : ' '}] Autorização para Pequenos Reparos</li>
-                </ul>
-                <ul style="list-style: none; padding-left: 0; margin: 5px 0 0 0; font-size: 14px;">
-                    <li>[${c.riscoEletrico ? 'X' : ' '}] Sem Risco Elétrico</li>
-                    <li>[${c.riscoSanitario ? 'X' : ' '}] Sem Risco Sanitário</li>
-                    <li>[${c.selo ? 'X' : ' '}] Selo Inmetro</li>
-                </ul>
+                <div style="column-count: 2; column-gap: 20px;">
+                    ${checklistHtml}
+                </div>
                 <p style="margin-top: 10px; font-size: 13px; color: #555;"><strong>Defeitos / Faltantes:</strong> ${p.defeitosAparentes || ''} ${p.pecasFaltantes || ''}</p>
             </div>
         `;
@@ -798,34 +782,30 @@ function imprimirContratoCliente() {
     `;
     
     produtos.forEach(p => {
-        const c = p.checklist || {};
+        let checklistHtml = '';
+        if (p.megaChecklist && p.megaChecklist.length > 0) {
+            const grouped = {};
+            p.megaChecklist.forEach(item => {
+                if(!grouped[item.category]) grouped[item.category] = [];
+                grouped[item.category].push(item.label);
+            });
+            for(const cat in grouped) {
+                checklistHtml += `<p style="margin: 8px 0 2px 0; font-size: 11px; font-weight: bold; color: #444;">${cat}</p>`;
+                checklistHtml += `<ul style="list-style: none; padding-left: 0; margin: 0; font-size: 10px;">`;
+                grouped[cat].forEach(label => {
+                    checklistHtml += `<li><i class="fa-solid fa-check" style="color: #666; margin-right: 4px;"></i> ${label}</li>`;
+                });
+                checklistHtml += `</ul>`;
+            }
+        } else {
+            checklistHtml = '<p style="font-size: 11px; font-style: italic; color: #999;">Checklist não preenchido.</p>';
+        }
+
         html += `
             <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
                 <h4 style="margin: 0 0 10px 0; font-size: 14px;">[${p.sku}] ${p.nome} - Valor Líquido de Repasse: R$ ${(p.precoVenda * (1 - p.comissao/100)).toFixed(2)}</h4>
-                <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                    <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 11px;">
-                        <li>[${c.integridade ? 'X' : ' '}] Integridade Estrutural</li>
-                        <li>[${c.higiene ? 'X' : ' '}] Higiene / Odores</li>
-                        <li>[${c.funcionalidade ? 'X' : ' '}] Funcional. Testada</li>
-                        <li>[${c.pecas ? 'X' : ' '}] Peças Completas</li>
-                        <li>[${c.fotos ? 'X' : ' '}] Fotos Anexadas</li>
-                    </ul>
-                    <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 11px;">
-                        <li>[${c.nota ? 'X' : ' '}] NF Original</li>
-                        <li>[${c.caixa ? 'X' : ' '}] Caixa Original</li>
-                        <li>[${c.manual ? 'X' : ' '}] Manual Instruções</li>
-                        <li>[${c.garantia ? 'X' : ' '}] Cert. Garantia</li>
-                    </ul>
-                    <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 11px;">
-                        <li>[${c.procedencia ? 'X' : ' '}] Proc. Lícita</li>
-                        <li>[${c.authHigiene ? 'X' : ' '}] Aut. Higienização</li>
-                        <li>[${c.authReparo ? 'X' : ' '}] Aut. Reparos</li>
-                    </ul>
-                    <ul style="list-style: none; padding-left: 0; margin: 0; font-size: 11px;">
-                        <li>[${c.riscoEletrico ? 'X' : ' '}] S/ Risco Elétrico</li>
-                        <li>[${c.riscoSanitario ? 'X' : ' '}] S/ Risco Sanitário</li>
-                        <li>[${c.selo ? 'X' : ' '}] Selo Inmetro</li>
-                    </ul>
+                <div style="column-count: 2; column-gap: 20px;">
+                    ${checklistHtml}
                 </div>
                 <p style="margin-top: 8px; font-size: 11px; color: #333;"><strong>Ressalvas/Faltantes:</strong> ${p.defeitosAparentes || 'Nenhuma ressalva.'} ${p.pecasFaltantes || ''}</p>
             </div>

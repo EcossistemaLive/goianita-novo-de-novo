@@ -130,79 +130,348 @@
                 <!-- Checklist de Avaliação -->
                 <div class="info-box" id="checklist-box">
                     <h4 class="info-box-title">Checklist de Triagem e Avaliação</h4>
-                    <div class="checklist-form" id="prod-checklist-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
-                        
-                        <h5 style="margin-top: 10px; color: var(--accent-gold); font-size: 13px;">1. AVALIAÇÃO FÍSICA</h5>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-integridade">
-                            <span>Integridade Estrutural e Visual (sem trincas/lascas)</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-higiene">
-                            <span>Higiene e Ausência de Odores</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-funcionalidade">
-                            <span>Funcionalidade Testada (para elétricos/mecânicos)</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-pecas">
-                            <span>Peças e Conjuntos Inspecionados completos</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-fotos">
-                            <span>Fotos e Vídeos anexados à base</span>
-                        </label>
-
-                        <h5 style="margin-top: 10px; color: var(--accent-gold); font-size: 13px;">2. DOCUMENTAÇÃO E ACESSÓRIOS</h5>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-nota">
-                            <span>Possui Nota Fiscal Original</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-caixa">
-                            <span>Possui Caixa / Embalagem Original</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-manual">
-                            <span>Possui Manual de Instruções</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-garantia">
-                            <span>Possui Certificado de Garantia</span>
-                        </label>
-
-                        <h5 style="margin-top: 10px; color: var(--accent-gold); font-size: 13px;">3. SEGURANÇA E TERMOS JURÍDICOS</h5>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-procedencia">
-                            <span>Declaração de Procedência Lícita (Proprietário legítimo)</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-auth-higiene">
-                            <span>Autorização Expressa para Higienização</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-auth-reparo">
-                            <span>Autorização para Pequenos Reparos / Restauração</span>
-                        </label>
-
-                        <h5 style="margin-top: 10px; color: var(--accent-gold); font-size: 13px;">4. RISCOS (Critérios de Recusa)</h5>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-risco-eletrico">
-                            <span>Produto Sem Risco Elétrico (Cabos íntegros)</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-risco-sanitario">
-                            <span>Produto Sem Risco Sanitário (Fácil desinfecção)</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="checkbox" id="chk-selo">
-                            <span>Eletrodoméstico possui Selo do Inmetro</span>
-                        </label>
+                    <div class="checklist-form" id="prod-checklist-form" style="display: flex; flex-direction: column; gap: 8px; margin-top: 15px;">
+                        <details class="mega-accordion">
+                            <summary>1. Identificação e Documentos</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="1. Identificação e Documentos" data-label="O proprietário declara ser legítimo dono da peça">
+                                    <span>O proprietário declara ser legítimo dono da peça</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="1. Identificação e Documentos" data-label="A peça possui nota fiscal original">
+                                    <span>A peça possui nota fiscal original</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="1. Identificação e Documentos" data-label="A peça possui manual">
+                                    <span>A peça possui manual</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="1. Identificação e Documentos" data-label="A peça possui caixa original">
+                                    <span>A peça possui caixa original</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="1. Identificação e Documentos" data-label="A peça possui garantia original vigente">
+                                    <span>A peça possui garantia original vigente</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="1. Identificação e Documentos" data-label="A peça possui assistência técnica conhecida">
+                                    <span>A peça possui assistência técnica conhecida</span>
+                                </label>
+                            </div>
+                        </details>
+                        <details class="mega-accordion">
+                            <summary>2. Registro Fotográfico</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="2. Registro Fotográfico" data-label="Foto frontal, traseira, superior e inferior">
+                                    <span>Foto frontal, traseira, superior e inferior</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="2. Registro Fotográfico" data-label="Foto da marca, assinatura ou selo">
+                                    <span>Foto da marca, assinatura ou selo</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="2. Registro Fotográfico" data-label="Foto do número de série e Inmetro">
+                                    <span>Foto do número de série e Inmetro</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="2. Registro Fotográfico" data-label="Foto da tampa, encaixes ou alças">
+                                    <span>Foto da tampa, encaixes ou alças</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="2. Registro Fotográfico" data-label="Foto de todos os acessórios e defeitos visíveis">
+                                    <span>Foto de todos os acessórios e defeitos visíveis</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="2. Registro Fotográfico" data-label="Foto do conjunto completo montado">
+                                    <span>Foto do conjunto completo montado</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="2. Registro Fotográfico" data-label="Vídeo de funcionamento (eletrônicos)">
+                                    <span>Vídeo de funcionamento (eletrônicos)</span>
+                                </label>
+                            </div>
+                        </details>
+                        <details class="mega-accordion">
+                            <summary>3. Classificação Comercial</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="3. Classificação Comercial" data-label="Classe A+ (Excelente / vitrine premium)">
+                                    <span>Classe A+ (Excelente / vitrine premium)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="3. Classificação Comercial" data-label="Classe A (Muito bom)">
+                                    <span>Classe A (Muito bom)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="3. Classificação Comercial" data-label="Classe B (Bom com sinais de uso)">
+                                    <span>Classe B (Bom com sinais de uso)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="3. Classificação Comercial" data-label="Classe C (Restrito / ressalva forte)">
+                                    <span>Classe C (Restrito / ressalva forte)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="3. Classificação Comercial" data-label="RECUSADO (Não entra na operação)">
+                                    <span>RECUSADO (Não entra na operação)</span>
+                                </label>
+                            </div>
+                        </details>
+                        <details class="mega-accordion">
+                            <summary>4. Inspeção Física Geral</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="4. Inspeção Física Geral" data-label="Sem trincas visíveis ou microtrincas">
+                                    <span>Sem trincas visíveis ou microtrincas</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="4. Inspeção Física Geral" data-label="Sem lascas ou riscos de corte">
+                                    <span>Sem lascas ou riscos de corte</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="4. Inspeção Física Geral" data-label="Sem restauração, colagem ou remendo">
+                                    <span>Sem restauração, colagem ou remendo</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="4. Inspeção Física Geral" data-label="Base apoia corretamente / estável">
+                                    <span>Base apoia corretamente / estável</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="4. Inspeção Física Geral" data-label="Cor, brilho e estampa preservados">
+                                    <span>Cor, brilho e estampa preservados</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="4. Inspeção Física Geral" data-label="Sem desgaste excessivo ou manchas permanentes">
+                                    <span>Sem desgaste excessivo ou manchas permanentes</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="4. Inspeção Física Geral" data-label="Sem odor de mofo, gordura, queimado ou cigarro">
+                                    <span>Sem odor de mofo, gordura, queimado ou cigarro</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="4. Inspeção Física Geral" data-label="Sem gordura impregnada ou bolor">
+                                    <span>Sem gordura impregnada ou bolor</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="4. Inspeção Física Geral" data-label="Abre, fecha, encaixa e veda corretamente">
+                                    <span>Abre, fecha, encaixa e veda corretamente</span>
+                                </label>
+                            </div>
+                        </details>
+                        <details class="mega-accordion">
+                            <summary>5. Conjuntos, Jogos e Coleções</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="5. Conjuntos, Jogos e Coleções" data-label="Todas as peças são da mesma marca/linha/cor">
+                                    <span>Todas as peças são da mesma marca/linha/cor</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="5. Conjuntos, Jogos e Coleções" data-label="Sem peças misturadas ou avulsas incorporadas">
+                                    <span>Sem peças misturadas ou avulsas incorporadas</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="5. Conjuntos, Jogos e Coleções" data-label="O conjunto está completo">
+                                    <span>O conjunto está completo</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="5. Conjuntos, Jogos e Coleções" data-label="Incompleto, mas vendável (Falta declarada)">
+                                    <span>Incompleto, mas vendável (Falta declarada)</span>
+                                </label>
+                            </div>
+                        </details>
+                        <details class="mega-accordion">
+                            <summary>6. Louças, Porcelanas e Cerâmicas</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="6. Louças, Porcelanas e Cerâmicas" data-label="Sem trinca interna ou externa">
+                                    <span>Sem trinca interna ou externa</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="6. Louças, Porcelanas e Cerâmicas" data-label="Sem lasca na borda, base ou alça">
+                                    <span>Sem lasca na borda, base ou alça</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="6. Louças, Porcelanas e Cerâmicas" data-label="Sem diferença de tom ou mancha escura interna">
+                                    <span>Sem diferença de tom ou mancha escura interna</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="6. Louças, Porcelanas e Cerâmicas" data-label="Sem desgaste de filete dourado/prateado">
+                                    <span>Sem desgaste de filete dourado/prateado</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="6. Louças, Porcelanas e Cerâmicas" data-label="Som limpo (não rachado) ao leve toque">
+                                    <span>Som limpo (não rachado) ao leve toque</span>
+                                </label>
+                            </div>
+                        </details>
+                        <details class="mega-accordion">
+                            <summary>7. Vidros e Cristais</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="7. Vidros e Cristais" data-label="Sem opacidade excessiva / esbranquiçamento">
+                                    <span>Sem opacidade excessiva / esbranquiçamento</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="7. Vidros e Cristais" data-label="Sem bolhas perigosas ou tensão aparente">
+                                    <span>Sem bolhas perigosas ou tensão aparente</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="7. Vidros e Cristais" data-label="Sem lasca na boca, base ou haste">
+                                    <span>Sem lasca na boca, base ou haste</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="7. Vidros e Cristais" data-label="Vedação e tampa íntegras">
+                                    <span>Vedação e tampa íntegras</span>
+                                </label>
+                            </div>
+                        </details>
+                        <details class="mega-accordion">
+                            <summary>8. Inox e Outros Metais</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="8. Inox e Outros Metais" data-label="Sem ferrugem ou pontos de corrosão (pitting)">
+                                    <span>Sem ferrugem ou pontos de corrosão (pitting)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="8. Inox e Outros Metais" data-label="Sem amassado estrutural ou fundo empenado">
+                                    <span>Sem amassado estrutural ou fundo empenado</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="8. Inox e Outros Metais" data-label="Sem rebite ou cabo frouxo">
+                                    <span>Sem rebite ou cabo frouxo</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="8. Inox e Outros Metais" data-label="Sem solda rompida">
+                                    <span>Sem solda rompida</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="8. Inox e Outros Metais" data-label="Sem perda grave de brilho">
+                                    <span>Sem perda grave de brilho</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="8. Inox e Outros Metais" data-label="Prata/Banho de prata sem descascamento severo">
+                                    <span>Prata/Banho de prata sem descascamento severo</span>
+                                </label>
+                            </div>
+                        </details>
+                        <details class="mega-accordion">
+                            <summary>9. Panelas e Assadeiras</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="9. Panelas e Assadeiras" data-label="Fundo plano e não estufado">
+                                    <span>Fundo plano e não estufado</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="9. Panelas e Assadeiras" data-label="Antiaderente íntegro (sem descascar ou bolhas)">
+                                    <span>Antiaderente íntegro (sem descascar ou bolhas)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="9. Panelas e Assadeiras" data-label="Sem gordura carbonizada irremediável">
+                                    <span>Sem gordura carbonizada irremediável</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="9. Panelas e Assadeiras" data-label="Tampa original/compatível e firme">
+                                    <span>Tampa original/compatível e firme</span>
+                                </label>
+                            </div>
+                        </details>
+                        <details class="mega-accordion">
+                            <summary>10. Plástico, Acrílico e Silicone</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="10. Plástico, Acrílico e Silicone" data-label="Sem ressecamento, rachadura ou deformação">
+                                    <span>Sem ressecamento, rachadura ou deformação</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="10. Plástico, Acrílico e Silicone" data-label="Sem alteração pegajosa">
+                                    <span>Sem alteração pegajosa</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="10. Plástico, Acrílico e Silicone" data-label="Travas e dobradiças funcionam">
+                                    <span>Travas e dobradiças funcionam</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="10. Plástico, Acrílico e Silicone" data-label="Silicone sem rasgo ou odor impregnado">
+                                    <span>Silicone sem rasgo ou odor impregnado</span>
+                                </label>
+                            </div>
+                        </details>
+                        <details class="mega-accordion">
+                            <summary>11. Madeira e Bambu</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="11. Madeira e Bambu" data-label="Sem cupim ou furos de inseto">
+                                    <span>Sem cupim ou furos de inseto</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="11. Madeira e Bambu" data-label="Sem mofo ou cheiro de umidade">
+                                    <span>Sem mofo ou cheiro de umidade</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="11. Madeira e Bambu" data-label="Superfície lisa sem farpas perigosas">
+                                    <span>Superfície lisa sem farpas perigosas</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="11. Madeira e Bambu" data-label="Sem verniz/tinta soltando na área de alimento">
+                                    <span>Sem verniz/tinta soltando na área de alimento</span>
+                                </label>
+                            </div>
+                        </details>
+                        <details class="mega-accordion">
+                            <summary>12. Eletrônicos e Eletroportáteis</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="12. Eletrônicos e Eletroportáteis" data-label="Tensão identificada (110V/220V/Bivolt)">
+                                    <span>Tensão identificada (110V/220V/Bivolt)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="12. Eletrônicos e Eletroportáteis" data-label="Cabo original sem emenda ou fio exposto">
+                                    <span>Cabo original sem emenda ou fio exposto</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="12. Eletrônicos e Eletroportáteis" data-label="Plugue íntegro sem derretimento">
+                                    <span>Plugue íntegro sem derretimento</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="12. Eletrônicos e Eletroportáteis" data-label="Sem cheiro de queimado, fumaça ou faísca">
+                                    <span>Sem cheiro de queimado, fumaça ou faísca</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="12. Eletrônicos e Eletroportáteis" data-label="Ligou, desligou e velocidades/aquecimento funcionam">
+                                    <span>Ligou, desligou e velocidades/aquecimento funcionam</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="12. Eletrônicos e Eletroportáteis" data-label="Possui Selo Inmetro">
+                                    <span>Possui Selo Inmetro</span>
+                                </label>
+                            </div>
+                        </details>
+                        <details class="mega-accordion">
+                            <summary>13. Higienização e Precificação</summary>
+                            <div class="accordion-content">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="13. Higienização e Precificação" data-label="Higienização concluída sem danos adicionais">
+                                    <span>Higienização concluída sem danos adicionais</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="13. Higienização e Precificação" data-label="Preço mínimo calculado (custos + margem garantida)">
+                                    <span>Preço mínimo calculado (custos + margem garantida)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="13. Higienização e Precificação" data-label="Etiqueta gerada com ressalvas e estado claro">
+                                    <span>Etiqueta gerada com ressalvas e estado claro</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" class="mega-input" data-category="13. Higienização e Precificação" data-label="Produto liberado para venda/exposição">
+                                    <span>Produto liberado para venda/exposição</span>
+                                </label>
+                            </div>
+                        </details>
 
                         <div style="margin-top: 20px;">
                             <button type="button" class="btn btn-primary" onclick="salvarChecklistProduto()">
-                                <i class="fa-solid fa-save"></i> Salvar Checklist Completo
+                                <i class="fa-solid fa-save"></i> Salvar Mega Checklist
                             </button>
                         </div>
                     </div>
