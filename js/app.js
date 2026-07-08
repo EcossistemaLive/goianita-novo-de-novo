@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Eventos Globais
     window.addEventListener('hashchange', renderActivePage);
+    window.addEventListener('goianitaDataChanged', renderActivePage);
 });
 
 function initUserSession() {

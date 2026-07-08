@@ -58,40 +58,61 @@ function initDatabase() {
 initDatabase();
 
 // Configurar escuta em tempo real do Firestore para sincronizar com localStorage
+let firestoreSyncInitialized = false;
+
 function setupFirestoreSync() {
-    if (typeof firebase === 'undefined' || !window.GoianitaFirestore) {
+    if (typeof firebase === 'undefined' || !window.GoianitaFirestore || !window.GoianitaAuth) {
         console.warn("[Firebase] SDK não carregado. Operando local-only.");
         return;
     }
     
-    console.log("[Firebase] Iniciando sincronização em tempo real com Firestore...");
+    window.GoianitaAuth.onAuthStateChanged((user) => {
+        if (user && !firestoreSyncInitialized) {
+            firestoreSyncInitialized = true;
+            console.log("[Firebase] Usuário autenticado. Iniciando sincronização em tempo real com Firestore...");
 
-    // Sincronizar clientes
-    window.GoianitaFirestore.collection('clientes').onSnapshot(snapshot => {
-        const clientes = [];
-        snapshot.forEach(doc => {
-            clientes.push({ id: doc.id, ...doc.data() });
-        });
-        localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify(clientes));
-    }, err => console.error("Erro no sync de clientes:", err));
+            let syncCount = 0;
+            const checkSync = () => {
+                syncCount++;
+                if (syncCount === 3) window.dispatchEvent(new Event('goianitaDataChanged'));
+            };
 
-    // Sincronizar produtos
-    window.GoianitaFirestore.collection('produtos').onSnapshot(snapshot => {
-        const produtos = [];
-        snapshot.forEach(doc => {
-            produtos.push({ id: doc.id, ...doc.data() });
-        });
-        localStorage.setItem(DB_KEYS.PRODUTOS, JSON.stringify(produtos));
-    }, err => console.error("Erro no sync de produtos:", err));
+            // Sincronizar clientes
+            window.GoianitaFirestore.collection('clientes').onSnapshot(snapshot => {
+                const clientes = [];
+                snapshot.forEach(doc => {
+                    clientes.push({ id: doc.id, ...doc.data() });
+                });
+                localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify(clientes));
+                window.dispatchEvent(new Event('goianitaDataChanged'));
+                if(syncCount < 3) checkSync();
+            }, err => console.error("Erro no sync de clientes:", err));
 
-    // Sincronizar pagamentos
-    window.GoianitaFirestore.collection('pagamentos').onSnapshot(snapshot => {
-        const pagamentos = [];
-        snapshot.forEach(doc => {
-            pagamentos.push({ id: doc.id, ...doc.data() });
-        });
-        localStorage.setItem(DB_KEYS.PAGAMENTOS, JSON.stringify(pagamentos));
-    }, err => console.error("Erro no sync de pagamentos:", err));
+            // Sincronizar produtos
+            window.GoianitaFirestore.collection('produtos').onSnapshot(snapshot => {
+                const produtos = [];
+                snapshot.forEach(doc => {
+                    produtos.push({ id: doc.id, ...doc.data() });
+                });
+                localStorage.setItem(DB_KEYS.PRODUTOS, JSON.stringify(produtos));
+                window.dispatchEvent(new Event('goianitaDataChanged'));
+                if(syncCount < 3) checkSync();
+            }, err => console.error("Erro no sync de produtos:", err));
+
+            // Sincronizar pagamentos
+            window.GoianitaFirestore.collection('pagamentos').onSnapshot(snapshot => {
+                const pagamentos = [];
+                snapshot.forEach(doc => {
+                    pagamentos.push({ id: doc.id, ...doc.data() });
+                });
+                localStorage.setItem(DB_KEYS.PAGAMENTOS, JSON.stringify(pagamentos));
+                window.dispatchEvent(new Event('goianitaDataChanged'));
+                if(syncCount < 3) checkSync();
+            }, err => console.error("Erro no sync de pagamentos:", err));
+        } else if (!user) {
+            console.warn("[Firebase] Usuário não autenticado. Sincronização pausada/não iniciada.");
+        }
+    });
 }
 
 // Iniciar escuta
@@ -235,8 +256,17 @@ const db = {
                 try {
                     const email = cliente.cpf.replace(/\D/g, '') + '@goianita.com.br';
                     const senha = cliente.senha || 'goianita123';
-                    await window.GoianitaAuth.createUserWithEmailAndPassword(email, senha);
-                    console.log(`[Firebase Auth] Usuário criado: ${email}`);
+                    
+                    let secondaryApp;
+                    try {
+                        secondaryApp = firebase.app("Secondary");
+                    } catch (e) {
+                        secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
+                    }
+                    
+                    await secondaryApp.auth().createUserWithEmailAndPassword(email, senha);
+                    await secondaryApp.auth().signOut();
+                    console.log(`[Firebase Auth] Usuário criado de forma silenciosa (sem deslogar o admin): ${email}`);
                 } catch (err) {
                     console.warn("[Firebase Auth] Usuário pode já existir ou erro na criação:", err);
                 }
