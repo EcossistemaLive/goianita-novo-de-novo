@@ -599,6 +599,79 @@ function renderProdutoNovo() {
         });
     }
 
+    // Auto-preenchimento da descrição e recomendação de aprovação
+    const inputsChecklist = document.querySelectorAll('#etapa-1-checklist .mega-input');
+    const descField = document.getElementById('prod-desc');
+    const boxAprovacao = document.getElementById('recomendacao-aprovacao-box');
+    
+    if (inputsChecklist.length > 0) {
+        inputsChecklist.forEach(inp => {
+            inp.addEventListener('change', () => {
+                let aprovados = [];
+                let falhos = [];
+                let classComercial = '';
+                
+                document.querySelectorAll('#etapa-1-checklist .mega-accordion[style*="display: block"] .mega-input, #etapa-1-checklist .mega-accordion:not([style*="display: none"]) .mega-input').forEach(chk => {
+                    // we need to only count visible ones if possible, but actually we should just count all checked.
+                    // Wait, the filter hides the accordion but not the inputs. 
+                    // Let's just check if the accordion parent is block or not hidden.
+                    const parentAcc = chk.closest('details');
+                    if (parentAcc && parentAcc.style.display === 'none') return;
+                    
+                    const cat = chk.getAttribute('data-category');
+                    const label = chk.getAttribute('data-label');
+                    
+                    if (cat === '3. Classificação Comercial') {
+                        if (chk.checked) classComercial = label;
+                        return;
+                    }
+                    if (cat === '1. Identificação e Documentos' || cat === '2. Registro Fotográfico' || cat === '13. Higienização e Precificação') {
+                        return; // não colocar na descrição
+                    }
+                    
+                    if (chk.checked) {
+                        aprovados.push(label);
+                    } else if (chk.type === 'checkbox') {
+                        falhos.push(label);
+                    }
+                });
+                
+                let desc = '';
+                if (classComercial) {
+                    desc += `Estado de Conservação: ${classComercial}\n\n`;
+                }
+                if (falhos.length > 0) {
+                    desc += `Ressalvas identificadas:\n- ${falhos.join('\n- ')}\n\n`;
+                }
+                if (aprovados.length > 0) {
+                    desc += `Pontos positivos / Acessórios:\n- ${aprovados.join('\n- ')}`;
+                }
+                
+                if (descField) {
+                    descField.value = desc.trim();
+                }
+                
+                // Recomendação
+                if (boxAprovacao) {
+                    if (classComercial.includes('RECUSADO') || classComercial.includes('Classe C') || falhos.length >= 3) {
+                        boxAprovacao.innerHTML = `<strong style="color: #d32f2f;"><i class="fa-solid fa-triangle-exclamation"></i> Recomendação: REPROVAR PRODUTO</strong><br><span style="font-size: 13px;">O produto apresenta ressalvas graves ou muitos defeitos. Recomenda-se recusar.</span>`;
+                        boxAprovacao.style.background = '#ffebee';
+                        boxAprovacao.style.borderColor = '#ffcdd2';
+                    } else if (falhos.length > 0) {
+                        boxAprovacao.innerHTML = `<strong style="color: #f57c00;"><i class="fa-solid fa-circle-exclamation"></i> Recomendação: AVALIAR COM CAUTELA</strong><br><span style="font-size: 13px;">O produto possui ressalvas. Analise se vale a pena comercializar.</span>`;
+                        boxAprovacao.style.background = '#fff3e0';
+                        boxAprovacao.style.borderColor = '#ffe0b2';
+                    } else {
+                        boxAprovacao.innerHTML = `<strong style="color: #388e3c;"><i class="fa-solid fa-check-circle"></i> Recomendação: APROVAR PRODUTO</strong><br><span style="font-size: 13px;">Produto em ótimo estado, apto para venda imediata.</span>`;
+                        boxAprovacao.style.background = '#e8f5e9';
+                        boxAprovacao.style.borderColor = '#c8e6c9';
+                    }
+                }
+            });
+        });
+    }
+
+
     // Motor de Precificação Inteligente
     const btnPesquisar = document.getElementById('btn-ia-precificacao');
     if (btnPesquisar) {
