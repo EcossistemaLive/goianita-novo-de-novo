@@ -300,10 +300,15 @@
         // ─────────────────────────────────────────────
         document.getElementById('cadastro-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const email    = document.getElementById('cad-email').value.trim().toLowerCase();
+            // Traduzir atalhos no momento do cadastro também
+            const rawEmail = document.getElementById('cad-email').value.trim().toLowerCase();
+            const email = ATALHOS_ADMIN[rawEmail] || rawEmail;
             const senha    = document.getElementById('cad-senha').value;
             const confirma = document.getElementById('cad-confirma').value;
             const btn      = document.getElementById('btn-cadastrar');
+
+            // Atualiza o campo com o e-mail completo para ficar visível pro usuário
+            document.getElementById('cad-email').value = email;
 
             // Validar senhas
             if (senha !== confirma) {
