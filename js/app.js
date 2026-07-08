@@ -671,29 +671,72 @@ function renderProdutoDetalhe() {
             produto.midias = produto.midias || [];
             
             try {
+                // Pegar o nome do bucket do config no db.js (tenta firebasestorage.app e appspot.com)
+                let bucketName = firebaseConfig.storageBucket;
+                if (!bucketName) bucketName = "app-brecho-fd94a.appspot.com";
+                else if (!bucketName.includes('.')) bucketName += ".appspot.com";
+
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
-                    statusLabel.textContent = `Processando arquivo ${i + 1} de ${files.length}...`;
+                    statusLabel.textContent = `Enviando arquivo ${i + 1} de ${files.length} para a nuvem...`;
                     
-                    // Lê o arquivo como base64 string
-                    const base64Url = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = () => reject(new Error("Falha ao ler o arquivo"));
-                        reader.readAsDataURL(file);
+                    const fileName = `${Date.now()}_${file.name}`;
+                    const filePath = `produtos/${produto.id}/${fileName}`;
+                    
+                    // UPLOAD VIA REST API (Bypassa os travamentos do SDK e problemas de CORS locais)
+                    const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o?name=${encodeURIComponent(filePath)}`;
+                    
+                    const response = await fetch(uploadUrl, {
+                        method: 'POST',
+                        body: file,
+                        headers: {
+                            'Content-Type': file.type || 'application/octet-stream'
+                        }
                     });
+
+                    if (!response.ok) {
+                        const errorData = await response.text();
+                        
+                        // Tentativa de fallback para appspot.com se o firebasestorage.app falhar por bucket não encontrado
+                        if (response.status === 404 || response.status === 400) {
+                            const fallbackBucket = bucketName.replace("firebasestorage.app", "appspot.com");
+                            if (fallbackBucket !== bucketName) {
+                                statusLabel.textContent = `Tentando rota alternativa na nuvem...`;
+                                const fallbackUrl = `https://firebasestorage.googleapis.com/v0/b/${fallbackBucket}/o?name=${encodeURIComponent(filePath)}`;
+                                const fallbackResponse = await fetch(fallbackUrl, {
+                                    method: 'POST',
+                                    body: file,
+                                    headers: { 'Content-Type': file.type || 'application/octet-stream' }
+                                });
+                                if (fallbackResponse.ok) {
+                                    const fallbackData = await fallbackResponse.json();
+                                    produto.midias.push({
+                                        url: `https://firebasestorage.googleapis.com/v0/b/${fallbackBucket}/o/${encodeURIComponent(filePath)}?alt=media&token=${fallbackData.downloadTokens}`,
+                                        type: file.type
+                                    });
+                                    continue;
+                                }
+                            }
+                        }
+                        
+                        throw new Error(`O Firebase recusou o arquivo (Status ${response.status}). Certifique-se de que a Regra do Storage está como 'allow read, write: if true;' e que você clicou em 'Começar' no painel do Storage.`);
+                    }
+
+                    const responseData = await response.json();
+                    const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(filePath)}?alt=media&token=${responseData.downloadTokens}`;
                     
                     produto.midias.push({
-                        url: base64Url,
+                        url: downloadUrl,
                         type: file.type
                     });
                 }
-                statusLabel.textContent = 'Gravando no banco de dados local...';
+                
+                statusLabel.textContent = 'Gravando link das mídias no banco de dados...';
                 await window.GoianitaDB.produtos.save(produto);
-                statusLabel.textContent = 'Upload concluído com sucesso!';
+                statusLabel.textContent = 'Upload para a nuvem concluído com sucesso!';
                 setTimeout(() => window.location.reload(), 1000);
             } catch (err) {
-                statusLabel.textContent = 'Erro ao processar mídia: ' + err.message;
+                statusLabel.textContent = 'Erro ao enviar para Firebase: ' + err.message;
                 uploadInput.disabled = false;
             }
         });
