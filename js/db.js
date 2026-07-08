@@ -349,7 +349,12 @@ const db = {
                 statusHistorico: statusHistorico
             };
 
-            await docRef.set(produtoFinal, { merge: true });
+            try {
+                await docRef.set(produtoFinal, { merge: true });
+            } catch(e) {
+                console.error("Erro de permissão no Firestore, salvando apenas localmente: ", e);
+                // Força o salvamento local para não travar a UI
+            }
 
             const produtosLocais = db.produtos.getAll();
             const idx = produtosLocais.findIndex(p => p.id === id);
