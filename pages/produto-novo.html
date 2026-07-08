@@ -108,19 +108,10 @@
                     <!-- Nome -->
                     <div class="form-group full-width">
                         <label class="form-label" for="prod-nome">Título / Nome do Produto *</label>
-                        <div style="display: flex; gap: 12px; width: 100%;">
-                            <input type="text" id="prod-nome" class="form-control" style="flex-grow: 1;" required placeholder="Ex: Aparelho de Jantar Cerâmica Porto Brasil 30 pçs">
-                            <button type="button" id="btn-ia-precificacao" class="btn btn-gold" style="white-space: nowrap;">
-                                <i class="fa-solid fa-wand-magic-sparkles"></i> Precificar com IA
-                            </button>
-                        </div>
+                        <input type="text" id="prod-nome" class="form-control" style="width: 100%;" required placeholder="Ex: Aparelho de Jantar Cerâmica Porto Brasil 30 pçs">
                     </div>
 
-                    <!-- Descrição -->
-                    <div class="form-group full-width">
-                        <label class="form-label" for="prod-desc">Descrição Detalhada do Produto</label>
-                        <textarea id="prod-desc" class="form-control" rows="4" placeholder="Descreva o estado, conservação, o que acompanha, se tem avarias..."></textarea>
-                    </div>
+
 
                     <!-- Categoria -->
                     <div class="form-group">
@@ -485,6 +476,21 @@
                     <div id="recomendacao-aprovacao-box" style="margin-top: 20px; padding: 15px; border-radius: 8px; border: 1px solid #ccc; background: #fff;">
                         <strong>Recomendação do Sistema</strong><br>
                         <span style="font-size: 13px; color: #555;">Preencha o checklist para ver a recomendação sobre a aprovação.</span>
+                    </div>
+
+                    <!-- Descrição Automática Pós-Checklist -->
+                    <div class="form-group full-width" style="margin-top: 20px;">
+                        <label class="form-label" for="prod-desc">Descrição Gerada do Produto (Editável)</label>
+                        <textarea id="prod-desc" class="form-control" rows="4" placeholder="A descrição será preenchida automaticamente de acordo com o checklist acima..."></textarea>
+                    </div>
+
+                    <!-- Precificação por IA -->
+                    <div class="form-group full-width" style="margin-top: 15px; padding: 20px; border-radius: 8px; border: 1px solid var(--accent-gold); background: #fcf6eb;" id="bloco-ia-precificacao">
+                        <h4 style="margin-top: 0; margin-bottom: 10px; color: #b18321;"><i class="fa-solid fa-wand-magic-sparkles"></i> Precificação Inteligente com IA</h4>
+                        <p style="font-size: 13px; margin-bottom: 15px; color: #666;">A IA irá considerar as marcações e avarias do checklist acima, além da categoria e do estado de conservação, para calcular o melhor valor de venda e de repasse.</p>
+                        <button type="button" id="btn-ia-precificacao" class="btn btn-gold" style="width: 100%; padding: 12px; font-size: 15px;">
+                            <i class="fa-solid fa-calculator"></i> Gerar Precificação Inteligente
+                        </button>
                     </div>
 
                     <div class="form-group full-width" style="margin-top: 20px; background: #f0f7ff; padding: 15px; border-radius: 8px; border: 1px solid #cce3ff;">

@@ -1542,12 +1542,17 @@ function exibirResultadoPrecificacao(dados) {
         </div>
     `;
 
-    // Insere o painel logo após o campo "nome + botão"
-    const nomeGroup = document.getElementById('prod-nome')?.closest('.form-group');
-    if (nomeGroup) {
-        nomeGroup.after(painel);
+    // Insere o painel logo após o bloco de precificação
+    const blocoIa = document.getElementById('bloco-ia-precificacao');
+    if (blocoIa) {
+        blocoIa.after(painel);
     } else {
-        document.getElementById('produto-form')?.appendChild(painel);
+        const nomeGroup = document.getElementById('prod-nome')?.closest('.form-group');
+        if (nomeGroup) {
+            nomeGroup.after(painel);
+        } else {
+            document.getElementById('produto-form')?.appendChild(painel);
+        }
     }
 
     // Scroll suave até o resultado
