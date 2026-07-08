@@ -368,10 +368,20 @@ function renderClienteDetalhe() {
     const prodTable = document.getElementById('cli-produtos-table');
     if (prodTable) {
         const produtos = window.GoianitaDB.produtos.getByCliente(id);
+        window.toggleTodosContrato = function(el) {
+            document.querySelectorAll('.contrato-check').forEach(cb => {
+                if(!cb.disabled) cb.checked = el.checked;
+            });
+        };
+
         prodTable.innerHTML = produtos.map(p => {
             const valorCliente = p.precoVenda - (p.precoVenda * p.comissao / 100);
+            const isApproved = p.status !== 'Recusado/Devolvido'; // ou algo do tipo
             return `
                 <tr>
+                    <td style="text-align: center;">
+                        <input type="checkbox" class="contrato-check" value="${p.id}" ${isApproved ? 'checked' : 'disabled title="Produto reprovado não pode entrar no contrato"'}>
+                    </td>
                     <td><strong>${p.sku}</strong></td>
                     <td>${p.nome}</td>
                     <td>${formatCurrency(p.precoVenda)}</td>
@@ -482,6 +492,52 @@ function renderProdutoNovo() {
         }
     });
 
+    window.toggleEtapa2 = function(isAprovado) {
+        const etapa2 = document.getElementById('etapa-2-dados');
+        const btnSubmit = document.querySelector('#produto-form button[type="submit"]');
+        if (isAprovado) {
+            etapa2.style.display = 'block';
+            if (btnSubmit) btnSubmit.disabled = false;
+        } else {
+            etapa2.style.display = 'none';
+            if (btnSubmit) btnSubmit.disabled = true;
+        }
+    };
+    
+    // Filtro do Mega Checklist baseado na categoria
+    const prodCat = document.getElementById('prod-cat');
+    if (prodCat) {
+        prodCat.addEventListener('change', () => {
+            const val = prodCat.value;
+            const categoryMap = {
+                'Cozinha e Mesa': ['1. Identificação e Documentos', '2. Registro Fotográfico', '3. Classificação Comercial', '4. Inspeção Física Geral', '5. Conjuntos, Jogos e Coleções', '6. Louças, Porcelanas e Cerâmicas', '7. Vidros e Cristais', '8. Inox e Outros Metais', '9. Panelas e Assadeiras', '10. Plástico, Acrílico e Silicone', '11. Madeira e Bambu', '13. Higienização e Precificação'],
+                'Decoração': ['1. Identificação e Documentos', '2. Registro Fotográfico', '3. Classificação Comercial', '4. Inspeção Física Geral', '5. Conjuntos, Jogos e Coleções', '6. Louças, Porcelanas e Cerâmicas', '7. Vidros e Cristais', '8. Inox e Outros Metais', '10. Plástico, Acrílico e Silicone', '11. Madeira e Bambu', '13. Higienização e Precificação'],
+                'Tapeçaria': ['1. Identificação e Documentos', '2. Registro Fotográfico', '3. Classificação Comercial', '4. Inspeção Física Geral', '13. Higienização e Precificação'],
+                'Banheiro': ['1. Identificação e Documentos', '2. Registro Fotográfico', '3. Classificação Comercial', '4. Inspeção Física Geral', '6. Louças, Porcelanas e Cerâmicas', '7. Vidros e Cristais', '8. Inox e Outros Metais', '10. Plástico, Acrílico e Silicone', '13. Higienização e Precificação'],
+                'Arte': ['1. Identificação e Documentos', '2. Registro Fotográfico', '3. Classificação Comercial', '4. Inspeção Física Geral', '11. Madeira e Bambu', '13. Higienização e Precificação'],
+                'Eletrodomésticos': ['1. Identificação e Documentos', '2. Registro Fotográfico', '3. Classificação Comercial', '4. Inspeção Física Geral', '8. Inox e Outros Metais', '10. Plástico, Acrílico e Silicone', '12. Eletrônicos e Eletroportáteis', '13. Higienização e Precificação']
+            };
+            
+            const allowed = categoryMap[val] || [];
+            if (allowed.length > 0) {
+                document.querySelectorAll('#etapa-1-checklist .mega-accordion').forEach(acc => {
+                    const catName = acc.querySelector('summary').textContent.trim();
+                    if (allowed.includes(catName)) {
+                        acc.style.display = 'block';
+                    } else {
+                        acc.style.display = 'none';
+                    }
+                });
+            } else {
+                document.querySelectorAll('#etapa-1-checklist .mega-accordion').forEach(acc => acc.style.display = 'block');
+            }
+        });
+        
+        // Disparar no carregamento
+        prodCat.dispatchEvent(new Event('change'));
+    }
+
+
     // Submete
     const form = document.getElementById('produto-form');
     if (form) {
@@ -491,6 +547,20 @@ function renderProdutoNovo() {
             const precoVenda = parseFloat(document.getElementById('prod-preco').value);
             const comissao = parseFloat(document.getElementById('prod-comissao').value) || 50;
             
+            // Coleta dados do Mega Checklist
+            const megaChecklist = [];
+            let classeComercial = 'Em Avaliação';
+            
+            document.querySelectorAll('#etapa-1-checklist .mega-input:checked').forEach(inp => {
+                const cat = inp.getAttribute('data-category');
+                const label = inp.getAttribute('data-label');
+                megaChecklist.push({ category: cat, label: label });
+                
+                if (cat === '3. Classificação Comercial') {
+                    classeComercial = label;
+                }
+            });
+            
             const novoProduto = {
                 nome: document.getElementById('prod-nome').value,
                 descricao: document.getElementById('prod-desc').value,
@@ -498,9 +568,8 @@ function renderProdutoNovo() {
                 subcategoria: document.getElementById('prod-subcat').value,
                 marca: document.getElementById('prod-marca').value,
                 ean: document.getElementById('prod-ean').value,
-                conservacao: document.getElementById('prod-conservacao') ? document.getElementById('prod-conservacao').value : 'Em Avaliação',
-                defeitosAparentes: document.getElementById('prod-defeitos') ? document.getElementById('prod-defeitos').value : '',
-                pecasFaltantes: document.getElementById('prod-faltantes') ? document.getElementById('prod-faltantes').value : '',
+                conservacao: classeComercial,
+                megaChecklist: megaChecklist,
                 peso: parseFloat(document.getElementById('prod-peso').value) || 0,
                 altura: parseFloat(document.getElementById('prod-alt').value) || 0,
                 largura: parseFloat(document.getElementById('prod-larg').value) || 0,
@@ -576,39 +645,82 @@ function renderProdutoDetalhe() {
     // Seletor de status rápido
     const statusSelect = document.getElementById('update-status-select');
     
-    // Checklist de Avaliação (se existir)
-    if (produto.megaChecklist) {
-        const inputs = document.querySelectorAll('.mega-input');
-        inputs.forEach(inp => {
-            const label = inp.getAttribute('data-label');
-            const found = produto.megaChecklist.find(item => item.label === label);
-            inp.checked = !!found;
-        });
-    }
-
-    // Filtrar categorias de checklist baseado na categoria do produto
-    const categoryMap = {
-        'Cozinha e Mesa': ['1. Identificação e Documentos', '2. Registro Fotográfico', '3. Classificação Comercial', '4. Inspeção Física Geral', '5. Conjuntos, Jogos e Coleções', '6. Louças, Porcelanas e Cerâmicas', '7. Vidros e Cristais', '8. Inox e Outros Metais', '9. Panelas e Assadeiras', '10. Plástico, Acrílico e Silicone', '11. Madeira e Bambu', '13. Higienização e Precificação'],
-        'Decoração': ['1. Identificação e Documentos', '2. Registro Fotográfico', '3. Classificação Comercial', '4. Inspeção Física Geral', '5. Conjuntos, Jogos e Coleções', '6. Louças, Porcelanas e Cerâmicas', '7. Vidros e Cristais', '8. Inox e Outros Metais', '10. Plástico, Acrílico e Silicone', '11. Madeira e Bambu', '13. Higienização e Precificação'],
-        'Tapeçaria': ['1. Identificação e Documentos', '2. Registro Fotográfico', '3. Classificação Comercial', '4. Inspeção Física Geral', '13. Higienização e Precificação'],
-        'Banheiro': ['1. Identificação e Documentos', '2. Registro Fotográfico', '3. Classificação Comercial', '4. Inspeção Física Geral', '6. Louças, Porcelanas e Cerâmicas', '7. Vidros e Cristais', '8. Inox e Outros Metais', '10. Plástico, Acrílico e Silicone', '13. Higienização e Precificação'],
-        'Arte': ['1. Identificação e Documentos', '2. Registro Fotográfico', '3. Classificação Comercial', '4. Inspeção Física Geral', '11. Madeira e Bambu', '13. Higienização e Precificação'],
-        'Eletrodomésticos': ['1. Identificação e Documentos', '2. Registro Fotográfico', '3. Classificação Comercial', '4. Inspeção Física Geral', '8. Inox e Outros Metais', '10. Plástico, Acrílico e Silicone', '12. Eletrônicos e Eletroportáteis', '13. Higienização e Precificação']
-    };
-    
-    const allowedCategories = categoryMap[produto.categoria] || [];
-    if (allowedCategories.length > 0) {
-        document.querySelectorAll('.mega-accordion').forEach(acc => {
-            const catName = acc.querySelector('summary').textContent.trim();
-            if (allowedCategories.includes(catName)) {
-                acc.style.display = 'block';
-            } else {
-                acc.style.display = 'none';
+    // Renderizar Checklist Read-Only
+    const readOnlyContainer = document.getElementById('read-only-checklist');
+    if (readOnlyContainer) {
+        if (produto.megaChecklist && produto.megaChecklist.length > 0) {
+            const grouped = {};
+            produto.megaChecklist.forEach(item => {
+                if(!grouped[item.category]) grouped[item.category] = [];
+                grouped[item.category].push(item.label);
+            });
+            let html = '<div style="column-count: 2; column-gap: 20px;">';
+            for (const cat in grouped) {
+                html += `<p style="margin: 8px 0 2px 0; font-size: 13px; font-weight: bold; color: var(--primary-color);">${cat}</p>`;
+                html += `<ul style="list-style: none; padding-left: 0; margin: 0; font-size: 12px; margin-bottom: 10px;">`;
+                grouped[cat].forEach(label => {
+                    html += `<li><i class="fa-solid fa-check" style="color: green; margin-right: 6px;"></i> ${label}</li>`;
+                });
+                html += `</ul>`;
             }
-        });
-    } else {
-        document.querySelectorAll('.mega-accordion').forEach(acc => acc.style.display = 'block');
+            html += '</div>';
+            readOnlyContainer.innerHTML = html;
+        } else {
+            readOnlyContainer.innerHTML = '<p style="font-size: 13px; color: #777;">Nenhum checklist preenchido para este produto.</p>';
+        }
     }
+    
+    window.imprimirLaudoProduto = function() {
+        const clienteObj = window.GoianitaDB.clientes.getById(produto.clienteId) || { nome: 'Desconhecido', cpf: '---' };
+        
+        const printArea = document.createElement('div');
+        printArea.id = 'print-area';
+        
+        let html = `
+            <div class="print-header">
+                <h2>Laudo de Triagem e Avaliação Técnica</h2>
+                <p><strong>Fornecedor:</strong> ${clienteObj.nome} | <strong>CPF:</strong> ${clienteObj.cpf}</p>
+                <p><strong>Produto:</strong> [${produto.sku}] ${produto.nome}</p>
+                <p><strong>Status de Conservação:</strong> ${produto.conservacao}</p>
+                <p><strong>Data da Avaliação:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+                <hr>
+            </div>
+            <div class="print-body">
+        `;
+        
+        if (produto.megaChecklist && produto.megaChecklist.length > 0) {
+            const grouped = {};
+            produto.megaChecklist.forEach(item => {
+                if(!grouped[item.category]) grouped[item.category] = [];
+                grouped[item.category].push(item.label);
+            });
+            html += '<div style="column-count: 2; column-gap: 20px;">';
+            for(const cat in grouped) {
+                html += `<p style="margin: 8px 0 2px 0; font-size: 14px; font-weight: bold; color: #333;">${cat}</p>`;
+                html += `<ul style="list-style: none; padding-left: 0; margin: 0; font-size: 12px; margin-bottom: 10px;">`;
+                grouped[cat].forEach(label => {
+                    html += `<li><i class="fa-solid fa-check" style="color: #666; margin-right: 4px;"></i> ${label}</li>`;
+                });
+                html += `</ul>`;
+            }
+            html += '</div>';
+        } else {
+            html += '<p>Nenhum dado de checklist registrado.</p>';
+        }
+        
+        html += `
+            </div>
+            <div class="print-footer" style="margin-top: 50px; text-align: center;">
+                <p>_______________________________________________________</p>
+                <p><strong>Avaliador Responsável (Casas Goianita)</strong></p>
+            </div>
+        `;
+        
+        printArea.innerHTML = html;
+        document.body.appendChild(printArea);
+        window.print();
+        document.body.removeChild(printArea);
+    };
 
     // Renderizar Galeria de Mídias
     const mediaGallery = document.getElementById('media-gallery');
@@ -911,10 +1023,14 @@ function imprimirContratoCliente() {
     if (!id) return;
     
     const cliente = window.GoianitaDB.clientes.getById(id);
-    const produtos = window.GoianitaDB.produtos.getByCliente(id);
+    const todosProdutos = window.GoianitaDB.produtos.getByCliente(id);
+    
+    // Obter apenas produtos selecionados
+    const checkedBoxes = Array.from(document.querySelectorAll('.contrato-check:checked')).map(cb => cb.value);
+    const produtos = todosProdutos.filter(p => checkedBoxes.includes(p.id.toString()));
     
     if (!produtos || produtos.length === 0) {
-        alert("Nenhum produto cadastrado para este fornecedor. O contrato exige ao menos um produto.");
+        alert("Nenhum produto selecionado. Por favor, marque os produtos que entrarão no contrato.");
         return;
     }
     
@@ -1115,14 +1231,33 @@ function renderFinanceiro() {
 function calcularPrecificacaoInteligente() {
     const nome = (document.getElementById('prod-nome')?.value || '').trim();
     const categoria = document.getElementById('prod-cat')?.value || 'Outros';
-    const conservacao = document.getElementById('prod-conservacao')?.value || 'B';
+    
+    // Extrai Conservação direto do Mega Checklist
+    let conservacao = 'B';
+    const classInput = document.querySelector('#etapa-1-checklist .mega-input[data-category="3. Classificação Comercial"]:checked');
+    if (classInput) {
+        const label = classInput.getAttribute('data-label');
+        if (label.includes('Classe A+')) conservacao = 'A+';
+        else if (label.includes('Classe A')) conservacao = 'A';
+        else if (label.includes('Classe B')) conservacao = 'B';
+        else if (label.includes('Classe C')) conservacao = 'C';
+    }
+
     const marca = (document.getElementById('prod-marca')?.value || '').trim().toLowerCase();
     const precoSugForecedor = parseFloat(document.getElementById('prod-preco-sug')?.value) || 0;
     const comissao = parseFloat(document.getElementById('prod-comissao')?.value) || 50;
     
-    const defeitos = (document.getElementById('prod-defeitos')?.value || '').trim();
-    const faltantes = (document.getElementById('prod-faltantes')?.value || '').trim();
-    const penalidadeRisco = (defeitos || faltantes) ? 0.90 : 1.00; // deduz 10% se houver defeito/falta
+    // Penalidade por riscos/defeitos: Se checkboxes positivos da categoria não foram marcados
+    let faltantesOuDefeitosCount = 0;
+    document.querySelectorAll('#etapa-1-checklist .mega-accordion[style*="display: block"] .mega-input').forEach(inp => {
+        const cat = inp.getAttribute('data-category');
+        if (cat && cat !== '1. Identificação e Documentos' && cat !== '2. Registro Fotográfico' && cat !== '3. Classificação Comercial' && cat !== '13. Higienização e Precificação') {
+            if (!inp.checked) faltantesOuDefeitosCount++;
+        }
+    });
+
+    // Cada item falho no checklist subtrai 5% do valor (penalidade máxima até bater 60%)
+    const penalidadeRisco = (faltantesOuDefeitosCount > 0) ? Math.max(0.60, 1.00 - (faltantesOuDefeitosCount * 0.05)) : 1.00;
 
     if (!nome) {
         alert('Por favor, preencha o nome do produto antes de usar a precificação inteligente.');
