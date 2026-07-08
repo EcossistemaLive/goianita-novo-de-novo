@@ -667,42 +667,59 @@ function renderProdutoDetalhe() {
             const statusLabel = document.getElementById('upload-status');
             statusLabel.textContent = `Enviando ${files.length} arquivo(s)... (pode demorar)`;
             uploadInput.disabled = true;
-            
             produto.midias = produto.midias || [];
-            
+
             try {
+                const webAppUrl = "https://script.google.com/macros/s/AKfycbwnQYnax3uFAnnEq77PSEOLWAWvhCfnyA5BDuKsCTwCRwFN2AAKHpv6cDETmLVSvF_v/exec";
+
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
-                    const fileName = `${Date.now()}_${file.name}`;
-                    const storageRef = window.GoianitaStorage.ref(`produtos/${produto.id}/${fileName}`);
+                    statusLabel.textContent = `Processando arquivo ${i + 1} de ${files.length}... (pode demorar)`;
                     
-                    const uploadTask = storageRef.put(file);
-                    
-                    // Monitorar o progresso
-                    uploadTask.on('state_changed', 
-                        (snapshot) => {
-                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            statusLabel.textContent = `Enviando arquivo ${i + 1} de ${files.length}... ${Math.round(progress)}%`;
-                        },
-                        (error) => {
-                            throw error;
-                        }
-                    );
-
-                    await uploadTask;
-                    const downloadUrl = await storageRef.getDownloadURL();
-                    
-                    produto.midias.push({
-                        url: downloadUrl,
-                        type: file.type
+                    // 1. Ler como Base64
+                    const base64Url = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = () => reject(new Error("Falha ao ler o arquivo"));
+                        reader.readAsDataURL(file);
                     });
+                    
+                    const fileName = `${Date.now()}_${file.name}`;
+                    
+                    statusLabel.textContent = `Enviando arquivo ${i + 1} de ${files.length} para a pasta de ${cliente.nome}...`;
+                    
+                    // 2. Enviar para o Google Apps Script usando 'text/plain' para evitar o bloqueio de preflight CORS (OPTIONS)
+                    const response = await fetch(webAppUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8',
+                        },
+                        body: JSON.stringify({
+                            fornecedor: cliente.nome,
+                            fileName: fileName,
+                            mimeType: file.type || 'application/octet-stream',
+                            base64Data: base64Url
+                        })
+                    });
+
+                    const responseData = await response.json();
+                    
+                    if (responseData.success) {
+                        produto.midias.push({
+                            url: responseData.url,
+                            type: file.type
+                        });
+                    } else {
+                        throw new Error(responseData.error || "Erro desconhecido no Google Drive");
+                    }
                 }
-                statusLabel.textContent = 'Gravando no banco de dados local...';
+                
+                statusLabel.textContent = 'Gravando no banco de dados...';
                 await window.GoianitaDB.produtos.save(produto);
-                statusLabel.textContent = 'Upload concluído com sucesso!';
-                setTimeout(() => window.location.reload(), 1000);
+                statusLabel.textContent = 'Mídias salvas com sucesso no Google Drive!';
+                setTimeout(() => window.location.reload(), 1500);
             } catch (err) {
-                statusLabel.textContent = 'Erro ao enviar para Firebase: ' + err.message;
+                statusLabel.textContent = 'Erro de envio: ' + err.message;
                 uploadInput.disabled = false;
             }
         });
