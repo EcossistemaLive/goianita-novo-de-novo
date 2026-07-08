@@ -673,35 +673,27 @@ function renderProdutoDetalhe() {
             try {
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
-                    const fileName = `${Date.now()}_${file.name}`;
-                    const storageRef = window.GoianitaStorage.ref(`produtos/${produto.id}/${fileName}`);
+                    statusLabel.textContent = `Processando arquivo ${i + 1} de ${files.length}...`;
                     
-                    const uploadTask = storageRef.put(file);
-                    
-                    // Monitorar o progresso
-                    uploadTask.on('state_changed', 
-                        (snapshot) => {
-                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            statusLabel.textContent = `Enviando arquivo ${i + 1} de ${files.length}... ${Math.round(progress)}%`;
-                        },
-                        (error) => {
-                            throw error;
-                        }
-                    );
-
-                    await uploadTask;
-                    const downloadUrl = await storageRef.getDownloadURL();
+                    // Lê o arquivo como base64 string
+                    const base64Url = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = () => reject(new Error("Falha ao ler o arquivo"));
+                        reader.readAsDataURL(file);
+                    });
                     
                     produto.midias.push({
-                        url: downloadUrl,
+                        url: base64Url,
                         type: file.type
                     });
                 }
+                statusLabel.textContent = 'Gravando no banco de dados local...';
                 await window.GoianitaDB.produtos.save(produto);
                 statusLabel.textContent = 'Upload concluído com sucesso!';
-                setTimeout(() => window.location.reload(), 1500);
+                setTimeout(() => window.location.reload(), 1000);
             } catch (err) {
-                statusLabel.textContent = 'Erro no upload: ' + err.message;
+                statusLabel.textContent = 'Erro ao processar mídia: ' + err.message;
                 uploadInput.disabled = false;
             }
         });
