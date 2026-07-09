@@ -570,7 +570,7 @@ function renderProdutoNovo() {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             
-            const btnSubmit = form.querySelector('button[type="submit"]');
+            
             
             // Validação manual
             const nomeStr = document.getElementById('prod-nome').value.trim();
