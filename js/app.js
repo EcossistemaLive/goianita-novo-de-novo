@@ -112,6 +112,35 @@ function renderActivePage() {
 }
 
 // --- UTILS FORMATADORES ---
+
+/**
+ * Escapa texto para inserção segura em HTML (proteção contra XSS).
+ * Deve envolver qualquer valor vindo do usuário/banco antes de ir para innerHTML.
+ */
+function esc(value) {
+    if (value === null || value === undefined) return '';
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/**
+ * Parser de moeda pt-BR (usa o helper global de db.js quando disponível).
+ * Trata separador de milhar e decimal: "1.399,00" -> 1399.00
+ */
+function parseMoeda(valor) {
+    if (typeof window.parseMoedaBR === 'function') return window.parseMoedaBR(valor);
+    if (typeof valor === 'number') return valor;
+    if (!valor) return 0;
+    let s = String(valor).replace(/[R$\s]/g, '');
+    if (s.indexOf(',') !== -1) s = s.replace(/\./g, '').replace(',', '.');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+}
+
 function formatCurrency(value) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
@@ -180,12 +209,12 @@ function renderDashboard() {
             const cliente = window.GoianitaDB.clientes.getById(p.clienteId) || { nome: 'Desconhecido' };
             return `
                 <tr>
-                    <td><strong>${p.sku}</strong></td>
-                    <td>${p.nome}</td>
-                    <td>${cliente.nome}</td>
+                    <td><strong>${esc(p.sku)}</strong></td>
+                    <td>${esc(p.nome)}</td>
+                    <td>${esc(cliente.nome)}</td>
                     <td>${formatCurrency(p.precoVenda)}</td>
                     <td>${getStatusBadge(p.status)}</td>
-                    <td><a href="pages/produto-detalhe.html?id=${p.id}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Ver</a></td>
+                    <td><a href="pages/produto-detalhe.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Ver</a></td>
                 </tr>
             `;
         }).join('');
@@ -204,13 +233,13 @@ function renderClientesList() {
             const financeiro = window.GoianitaDB.utils.calcularValoresCliente(c.id);
             return `
                 <tr>
-                    <td><strong>${c.nome}</strong></td>
-                    <td>${c.cpf}</td>
-                    <td>${c.telefone}</td>
+                    <td><strong>${esc(c.nome)}</strong></td>
+                    <td>${esc(c.cpf)}</td>
+                    <td>${esc(c.telefone)}</td>
                     <td>${financeiro.produtosTotais} produtos</td>
                     <td><strong style="color: var(--accent-gold);">${formatCurrency(financeiro.saldoPendente)}</strong></td>
                     <td>
-                        <a href="cliente-detalhe.html?id=${c.id}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Visualizar</a>
+                        <a href="cliente-detalhe.html?id=${encodeURIComponent(c.id)}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Visualizar</a>
                     </td>
                 </tr>
             `;
@@ -406,17 +435,17 @@ function renderClienteDetalhe() {
             return `
                 <tr>
                     <td style="text-align: center;">
-                        <input type="checkbox" class="contrato-check" value="${p.id}" ${isApproved ? 'checked' : 'disabled title="Produto reprovado não pode entrar no contrato"'}>
+                        <input type="checkbox" class="contrato-check" value="${esc(p.id)}" ${isApproved ? 'checked' : 'disabled title="Produto reprovado não pode entrar no contrato"'}>
                     </td>
-                    <td><strong>${p.sku}</strong></td>
-                    <td>${p.nome}</td>
+                    <td><strong>${esc(p.sku)}</strong></td>
+                    <td>${esc(p.nome)}</td>
                     <td>${formatCurrency(p.precoVenda)}</td>
                     <td>${p.comissao}%</td>
                     <td>${formatCurrency(valorCliente)}</td>
                     <td>${getStatusBadge(p.status)}</td>
                     <td>
-                        ${role === 'admin' 
-                            ? `<a href="produto-detalhe.html?id=${p.id}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Gerenciar</a>` 
+                        ${role === 'admin'
+                            ? `<a href="produto-detalhe.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Gerenciar</a>`
                             : `<span style="font-size: 13px; color: var(--text-muted);">Apenas leitura</span>`
                         }
                     </td>
@@ -436,8 +465,8 @@ function renderClienteDetalhe() {
                 <tr>
                     <td>${formatDate(p.data)}</td>
                     <td><strong style="color: var(--status-pago);">${formatCurrency(p.valor)}</strong></td>
-                    <td>${p.chavePix}</td>
-                    <td><code style="background-color: var(--bg-secondary); padding: 4px 8px; border-radius: 4px; font-size: 12px;">${p.comprovante}</code></td>
+                    <td>${esc(p.chavePix)}</td>
+                    <td><code style="background-color: var(--bg-secondary); padding: 4px 8px; border-radius: 4px; font-size: 12px;">${esc(p.comprovante)}</code></td>
                 </tr>
             `).join('');
         }
@@ -457,15 +486,15 @@ function renderProdutosList() {
             const valorCliente = p.precoVenda - (p.precoVenda * p.comissao / 100);
             return `
                 <tr>
-                    <td><strong>${p.sku}</strong></td>
-                    <td>${p.nome}</td>
-                    <td>${cliente.nome}</td>
+                    <td><strong>${esc(p.sku)}</strong></td>
+                    <td>${esc(p.nome)}</td>
+                    <td>${esc(cliente.nome)}</td>
                     <td>${formatCurrency(p.precoVenda)}</td>
                     <td>${p.comissao}%</td>
                     <td><strong>${formatCurrency(valorCliente)}</strong></td>
                     <td>${getStatusBadge(p.status)}</td>
                     <td>
-                        <a href="produto-detalhe.html?id=${p.id}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Gerenciar</a>
+                        <a href="produto-detalhe.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Gerenciar</a>
                     </td>
                 </tr>
             `;
@@ -507,7 +536,7 @@ function renderProdutoNovo() {
     // Popula dropdown de clientes
     const clientes = window.GoianitaDB.clientes.getAll();
     selectCliente.innerHTML = `<option value="">Selecione o Fornecedor...</option>` + 
-        clientes.map(c => `<option value="${c.id}" data-comissao="${c.comissaoPadrao}">${c.nome} (${c.cpf})</option>`).join('');
+        clientes.map(c => `<option value="${esc(c.id)}" data-comissao="${esc(c.comissaoPadrao)}">${esc(c.nome)} (${esc(c.cpf)})</option>`).join('');
         
     // Ao selecionar cliente, atualiza a comissão automaticamente
     selectCliente.addEventListener('change', () => {
@@ -590,7 +619,7 @@ function renderProdutoNovo() {
                 return;
             }
 
-            const precoVenda = parseFloat(precoVendaStr.replace(',', '.'));
+            const precoVenda = parseMoeda(precoVendaStr);
             const comissao = parseFloat(document.getElementById('prod-comissao').value) || 50;
             
             // Coleta dados do Mega Checklist
@@ -725,7 +754,7 @@ function renderProdutoDetalhe() {
     document.getElementById('prod-detalhe-sku').textContent = produto.sku;
     document.getElementById('prod-detalhe-nome').textContent = produto.nome;
     document.getElementById('prod-detalhe-desc').textContent = produto.descricao || 'Sem descrição';
-    document.getElementById('prod-detalhe-cliente').innerHTML = `<a href="cliente-detalhe.html?id=${cliente.id}">${cliente.nome}</a>`;
+    document.getElementById('prod-detalhe-cliente').innerHTML = `<a href="cliente-detalhe.html?id=${encodeURIComponent(cliente.id)}">${esc(cliente.nome)}</a>`;
     document.getElementById('prod-detalhe-conservacao').textContent = produto.conservacao;
     document.getElementById('prod-detalhe-dimensoes').textContent = `${produto.altura}x${produto.largura}x${produto.comprimento} cm | ${produto.peso} kg`;
     document.getElementById('prod-detalhe-preco-venda').textContent = formatCurrency(produto.precoVenda);
@@ -749,10 +778,10 @@ function renderProdutoDetalhe() {
             });
             let html = '<div style="column-count: 2; column-gap: 20px;">';
             for (const cat in grouped) {
-                html += `<p style="margin: 8px 0 2px 0; font-size: 13px; font-weight: bold; color: var(--primary-color);">${cat}</p>`;
+                html += `<p style="margin: 8px 0 2px 0; font-size: 13px; font-weight: bold; color: var(--primary-color);">${esc(cat)}</p>`;
                 html += `<ul style="list-style: none; padding-left: 0; margin: 0; font-size: 12px; margin-bottom: 10px;">`;
                 grouped[cat].forEach(label => {
-                    html += `<li><i class="fa-solid fa-check" style="color: green; margin-right: 6px;"></i> ${label}</li>`;
+                    html += `<li><i class="fa-solid fa-check" style="color: green; margin-right: 6px;"></i> ${esc(label)}</li>`;
                 });
                 html += `</ul>`;
             }
@@ -772,9 +801,9 @@ function renderProdutoDetalhe() {
         let html = `
             <div class="print-header">
                 <h2>Laudo de Triagem e Avaliação Técnica</h2>
-                <p><strong>Fornecedor:</strong> ${clienteObj.nome} | <strong>CPF:</strong> ${clienteObj.cpf}</p>
-                <p><strong>Produto:</strong> [${produto.sku}] ${produto.nome}</p>
-                <p><strong>Status de Conservação:</strong> ${produto.conservacao}</p>
+                <p><strong>Fornecedor:</strong> ${esc(clienteObj.nome)} | <strong>CPF:</strong> ${esc(clienteObj.cpf)}</p>
+                <p><strong>Produto:</strong> [${esc(produto.sku)}] ${esc(produto.nome)}</p>
+                <p><strong>Status de Conservação:</strong> ${esc(produto.conservacao)}</p>
                 <p><strong>Data da Avaliação:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
                 <hr>
             </div>
@@ -789,10 +818,10 @@ function renderProdutoDetalhe() {
             });
             html += '<div style="column-count: 2; column-gap: 20px;">';
             for(const cat in grouped) {
-                html += `<p style="margin: 8px 0 2px 0; font-size: 14px; font-weight: bold; color: #333;">${cat}</p>`;
+                html += `<p style="margin: 8px 0 2px 0; font-size: 14px; font-weight: bold; color: #333;">${esc(cat)}</p>`;
                 html += `<ul style="list-style: none; padding-left: 0; margin: 0; font-size: 12px; margin-bottom: 10px;">`;
                 grouped[cat].forEach(label => {
-                    html += `<li><i class="fa-solid fa-check" style="color: #666; margin-right: 4px;"></i> ${label}</li>`;
+                    html += `<li><i class="fa-solid fa-check" style="color: #666; margin-right: 4px;"></i> ${esc(label)}</li>`;
                 });
                 html += `</ul>`;
             }
@@ -1052,7 +1081,7 @@ function imprimirAvaliacoesCliente() {
     let html = `
         <div class="print-header">
             <h2>Termo de Triagem e Avaliação de Produtos</h2>
-            <p><strong>Fornecedor:</strong> ${cliente.nome} | <strong>CPF:</strong> ${cliente.cpf}</p>
+            <p><strong>Fornecedor:</strong> ${esc(cliente.nome)} | <strong>CPF:</strong> ${esc(cliente.cpf)}</p>
             <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
             <hr>
         </div>
@@ -1068,10 +1097,10 @@ function imprimirAvaliacoesCliente() {
                 grouped[item.category].push(item.label);
             });
             for(const cat in grouped) {
-                checklistHtml += `<p style="margin: 8px 0 2px 0; font-size: 12px; font-weight: bold; color: #444;">${cat}</p>`;
+                checklistHtml += `<p style="margin: 8px 0 2px 0; font-size: 12px; font-weight: bold; color: #444;">${esc(cat)}</p>`;
                 checklistHtml += `<ul style="list-style: none; padding-left: 0; margin: 0; font-size: 11px;">`;
                 grouped[cat].forEach(label => {
-                    checklistHtml += `<li><i class="fa-solid fa-check" style="color: #666; margin-right: 4px;"></i> ${label}</li>`;
+                    checklistHtml += `<li><i class="fa-solid fa-check" style="color: #666; margin-right: 4px;"></i> ${esc(label)}</li>`;
                 });
                 checklistHtml += `</ul>`;
             }
@@ -1081,11 +1110,11 @@ function imprimirAvaliacoesCliente() {
 
         html += `
             <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                <h4 style="margin: 0 0 10px 0;">[${p.sku}] ${p.nome} - R$ ${p.precoVenda.toFixed(2)}</h4>
+                <h4 style="margin: 0 0 10px 0;">[${esc(p.sku)}] ${esc(p.nome)} - R$ ${p.precoVenda.toFixed(2)}</h4>
                 <div style="column-count: 2; column-gap: 20px;">
                     ${checklistHtml}
                 </div>
-                <p style="margin-top: 10px; font-size: 13px; color: #555;"><strong>Defeitos / Faltantes:</strong> ${p.defeitosAparentes || ''} ${p.pecasFaltantes || ''}</p>
+                <p style="margin-top: 10px; font-size: 13px; color: #555;"><strong>Defeitos / Faltantes:</strong> ${esc(p.defeitosAparentes || '')} ${esc(p.pecasFaltantes || '')}</p>
             </div>
         `;
     });
@@ -1096,7 +1125,7 @@ function imprimirAvaliacoesCliente() {
             <p>Declaro ciência e concordância com a avaliação das peças acima descritas.</p>
             <br><br>
             <p>_______________________________________________________</p>
-            <p><strong>${cliente.nome}</strong></p>
+            <p><strong>${esc(cliente.nome)}</strong></p>
             <p>Assinatura do Fornecedor</p>
         </div>
     `;
@@ -1136,7 +1165,7 @@ function imprimirContratoCliente() {
             
             <h3 style="font-size: 14px; margin-top: 20px;">QUALIFICAÇÃO DAS PARTES</h3>
             <p style="font-size: 12px; text-align: justify; margin-bottom: 10px;"><strong>CONSIGNATÁRIA:</strong> VIRTUAL DISTRIBUIDORA DE UTILIDADES DOMÉSTICAS LTDA (CASAS GOIANITA), sociedade limitada, inscrita no CNPJ sob o nº 11.316.256/0001-29, situada na Rua 85, nº 369, Quadra F19, Lote 45, Setor Sul, Goiânia/GO, CEP: 74080-010.</p>
-            <p style="font-size: 12px; text-align: justify; margin-bottom: 10px;"><strong>CONSIGNANTE:</strong> ${cliente.nome}, inscrito(a) no CPF/CNPJ sob o nº ${cliente.cpf}, telefone ${cliente.telefone}, e-mail ${cliente.email}.</p>
+            <p style="font-size: 12px; text-align: justify; margin-bottom: 10px;"><strong>CONSIGNANTE:</strong> ${esc(cliente.nome)}, inscrito(a) no CPF/CNPJ sob o nº ${esc(cliente.cpf)}, telefone ${esc(cliente.telefone)}, e-mail ${esc(cliente.email)}.</p>
             <p style="font-size: 12px; text-align: justify; margin-bottom: 20px;">As partes acima qualificadas celebram, entre si, o presente instrumento particular, que será regido pela legislação aplicável, em especial, pelos artigos 534 e seguintes do Código Civil Brasileiro e pelas cláusulas e disposições seguintes:</p>
 
             <h3 style="font-size: 14px; margin-top: 20px;">CLÁUSULAS CONTRATUAIS RESUMIDAS</h3>
@@ -1175,10 +1204,10 @@ function imprimirContratoCliente() {
                 grouped[item.category].push(item.label);
             });
             for(const cat in grouped) {
-                checklistHtml += `<p style="margin: 8px 0 2px 0; font-size: 11px; font-weight: bold; color: #444;">${cat}</p>`;
+                checklistHtml += `<p style="margin: 8px 0 2px 0; font-size: 11px; font-weight: bold; color: #444;">${esc(cat)}</p>`;
                 checklistHtml += `<ul style="list-style: none; padding-left: 0; margin: 0; font-size: 10px;">`;
                 grouped[cat].forEach(label => {
-                    checklistHtml += `<li><i class="fa-solid fa-check" style="color: #666; margin-right: 4px;"></i> ${label}</li>`;
+                    checklistHtml += `<li><i class="fa-solid fa-check" style="color: #666; margin-right: 4px;"></i> ${esc(label)}</li>`;
                 });
                 checklistHtml += `</ul>`;
             }
@@ -1188,11 +1217,11 @@ function imprimirContratoCliente() {
 
         html += `
             <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
-                <h4 style="margin: 0 0 10px 0; font-size: 14px;">[${p.sku}] ${p.nome} - Valor Líquido de Repasse: R$ ${(p.precoVenda * (1 - p.comissao/100)).toFixed(2)}</h4>
+                <h4 style="margin: 0 0 10px 0; font-size: 14px;">[${esc(p.sku)}] ${esc(p.nome)} - Valor Líquido de Repasse: R$ ${(p.precoVenda * (1 - p.comissao/100)).toFixed(2)}</h4>
                 <div style="column-count: 2; column-gap: 20px;">
                     ${checklistHtml}
                 </div>
-                <p style="margin-top: 8px; font-size: 11px; color: #333;"><strong>Ressalvas/Faltantes:</strong> ${p.defeitosAparentes || 'Nenhuma ressalva.'} ${p.pecasFaltantes || ''}</p>
+                <p style="margin-top: 8px; font-size: 11px; color: #333;"><strong>Ressalvas/Faltantes:</strong> ${esc(p.defeitosAparentes || 'Nenhuma ressalva.')} ${esc(p.pecasFaltantes || '')}</p>
             </div>
         `;
     });
@@ -1205,8 +1234,8 @@ function imprimirContratoCliente() {
             <div style="display: flex; justify-content: space-around; margin-top: 60px;">
                 <div style="text-align: center;">
                     <p>_______________________________________________________</p>
-                    <p><strong>${cliente.nome}</strong></p>
-                    <p style="font-size: 12px;">CONSIGNANTE (CPF/CNPJ: ${cliente.cpf})</p>
+                    <p><strong>${esc(cliente.nome)}</strong></p>
+                    <p style="font-size: 12px;">CONSIGNANTE (CPF/CNPJ: ${esc(cliente.cpf)})</p>
                 </div>
                 <div style="text-align: center;">
                     <p>_______________________________________________________</p>
@@ -1244,13 +1273,13 @@ function renderFinanceiro() {
             const fin = window.GoianitaDB.utils.calcularValoresCliente(c.id);
             return `
                 <tr>
-                    <td><strong>${c.nome}</strong></td>
-                    <td>${c.chavePixType}: <code>${c.chavePix}</code></td>
+                    <td><strong>${esc(c.nome)}</strong></td>
+                    <td>${esc(c.chavePixType)}: <code>${esc(c.chavePix)}</code></td>
                     <td>${formatCurrency(fin.totalApostado)}</td>
                     <td>${formatCurrency(fin.totalPago)}</td>
                     <td><strong style="color: ${fin.saldoPendente > 0 ? 'var(--status-vendido)' : 'var(--status-venda)'};">${formatCurrency(fin.saldoPendente)}</strong></td>
                     <td>
-                        <a href="cliente-detalhe.html?id=${c.id}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Visualizar Extrato</a>
+                        <a href="cliente-detalhe.html?id=${encodeURIComponent(c.id)}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Visualizar Extrato</a>
                     </td>
                 </tr>
             `;
