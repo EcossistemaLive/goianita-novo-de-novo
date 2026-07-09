@@ -308,6 +308,9 @@ function renderClienteDetalhe() {
         const btnPagar = document.getElementById('btn-pagar-cliente');
         if (btnPagar) btnPagar.style.display = 'none';
 
+        const btnExcluir = document.getElementById('btn-excluir-cliente');
+        if (btnExcluir) btnExcluir.style.display = 'none';
+
         // Oculta botão Voltar à Lista
         const backBtn = document.querySelector('.page-header a');
         if (backBtn) {
@@ -364,6 +367,25 @@ function renderClienteDetalhe() {
                 } else {
                     alert("Valor inválido ou maior que o saldo pendente.");
                 }
+            }
+        });
+    }
+
+    const btnExcluir = document.getElementById('btn-excluir-cliente');
+    if (btnExcluir && role === 'admin') {
+        btnExcluir.addEventListener('click', () => {
+            const hasProdutos = window.GoianitaDB.produtos.getByCliente(id).length > 0;
+            if (hasProdutos) {
+                alert("Não é possível excluir este fornecedor pois ele possui produtos vinculados.");
+                return;
+            }
+            if (confirm(`ATENÇÃO: Você tem certeza que deseja excluir o fornecedor ${cliente.nome}?\nEsta ação não pode ser desfeita.`)) {
+                window.GoianitaDB.clientes.delete(id).then(() => {
+                    alert("Fornecedor excluído com sucesso.");
+                    window.location.href = 'clientes.html';
+                }).catch(err => {
+                    alert("Erro ao excluir fornecedor: " + err.message);
+                });
             }
         });
     }

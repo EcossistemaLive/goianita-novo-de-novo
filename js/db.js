@@ -248,8 +248,21 @@ const db = {
         getAll: () => JSON.parse(localStorage.getItem(DB_KEYS.CLIENTES) || '[]'),
         getById: (id) => db.clientes.getAll().find(c => c.id === id),
         save: async (cliente, skipSync = false) => {
+            const clientesAtuais = db.clientes.getAll();
+            
+            // Validação de duplicidade de CPF/CNPJ para novos cadastros
+            if (!cliente.id) {
+                const cpfLimpo = cliente.cpf ? cliente.cpf.replace(/\D/g, '') : '';
+                if (cpfLimpo) {
+                    const duplicado = clientesAtuais.find(c => c.cpf && c.cpf.replace(/\D/g, '') === cpfLimpo);
+                    if (duplicado) {
+                        throw new Error(`Já existe um fornecedor cadastrado com o CPF/CNPJ ${cliente.cpf} (${duplicado.nome}).`);
+                    }
+                }
+            }
+
             if (typeof firebase === 'undefined' || !window.GoianitaFirestore) {
-                const clientes = db.clientes.getAll();
+                const clientes = clientesAtuais;
                 if (cliente.id) {
                     const index = clientes.findIndex(c => c.id === cliente.id);
                     if (index !== -1) clientes[index] = { ...clientes[index], ...cliente };
