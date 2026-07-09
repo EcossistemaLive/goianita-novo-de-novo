@@ -805,17 +805,17 @@ h1, h2, h3, h4, h5, h6 {
         width: 100%;
         padding: 10px;
         background: white;
-        font-size: 16px;
-        line-height: 1.4;
+        font-size: 19px;
+        line-height: 1.45;
     }
     .print-header h2 {
         color: var(--text-main);
-        font-size: 24px;
+        font-size: 30px;
         margin-bottom: 5px;
     }
     .print-header p {
-        margin: 5px 0;
-        font-size: 16px;
+        margin: 6px 0;
+        font-size: 19px;
     }
     .print-header hr {
         margin: 20px 0;
@@ -825,19 +825,20 @@ h1, h2, h3, h4, h5, h6 {
     .print-body h4 {
         margin-bottom: 8px;
         color: var(--text-main);
-        font-size: 18px;
+        font-size: 22px;
     }
     .print-body p {
-        font-size: 16px;
+        font-size: 19px;
         margin-bottom: 6px;
     }
     .print-body li {
         font-family: monospace;
+        font-size: 16px;
         margin-bottom: 4px;
     }
     .print-footer p {
-        margin: 5px 0;
-        font-size: 16px;
+        margin: 6px 0;
+        font-size: 19px;
     }
 }
 
