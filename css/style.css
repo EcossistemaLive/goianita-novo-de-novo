@@ -788,8 +788,10 @@ h1, h2, h3, h4, h5, h6 {
         left: 0;
         top: 0;
         width: 100%;
-        padding: 20px;
+        padding: 10px;
         background: white;
+        font-size: 16px;
+        line-height: 1.4;
     }
     .print-header h2 {
         color: var(--text-main);
@@ -798,7 +800,7 @@ h1, h2, h3, h4, h5, h6 {
     }
     .print-header p {
         margin: 5px 0;
-        font-size: 14px;
+        font-size: 16px;
     }
     .print-header hr {
         margin: 20px 0;
@@ -806,8 +808,13 @@ h1, h2, h3, h4, h5, h6 {
         border-top: 1px solid #ccc;
     }
     .print-body h4 {
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         color: var(--text-main);
+        font-size: 18px;
+    }
+    .print-body p {
+        font-size: 16px;
+        margin-bottom: 6px;
     }
     .print-body li {
         font-family: monospace;
@@ -815,6 +822,7 @@ h1, h2, h3, h4, h5, h6 {
     }
     .print-footer p {
         margin: 5px 0;
+        font-size: 16px;
     }
 }
 

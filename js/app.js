@@ -548,7 +548,27 @@ function renderProdutoNovo() {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             
-            const precoVenda = parseFloat(document.getElementById('prod-preco').value);
+            const btnSubmit = form.querySelector('button[type="submit"]');
+            
+            // Validação manual
+            const nomeStr = document.getElementById('prod-nome').value.trim();
+            const clienteVal = selectCliente.value;
+            const precoVendaStr = document.getElementById('prod-preco').value;
+            
+            if (!clienteVal) {
+                alert("Por favor, selecione um Fornecedor / Cliente Proprietário.");
+                return;
+            }
+            if (!nomeStr) {
+                alert("Por favor, preencha o Nome Comercial do Produto.");
+                return;
+            }
+            if (!precoVendaStr) {
+                alert("Por favor, preencha o Preço de Venda (ou clique em Gerar Precificação Inteligente).");
+                return;
+            }
+
+            const precoVenda = parseFloat(precoVendaStr.replace(',', '.'));
             const comissao = parseFloat(document.getElementById('prod-comissao').value) || 50;
             
             // Coleta dados do Mega Checklist
@@ -596,6 +616,7 @@ function renderProdutoNovo() {
                 alert('Produto cadastrado com sucesso!');
                 window.location.href = 'produtos.html';
             }).catch(err => {
+                console.error("Erro capturado no save:", err);
                 alert('Erro ao cadastrar produto: ' + err.message);
                 btnSubmit.disabled = false;
                 btnSubmit.textContent = originalText;
