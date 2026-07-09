@@ -28,7 +28,7 @@ if (typeof firebase !== 'undefined') {
     window.GoianitaAuth = firebase.auth();
     window.GoianitaFirestore = firebase.firestore();
     window.GoianitaStorage = firebase.storage();
-    
+
     // Habilitar persistência off-line se possível
     window.GoianitaFirestore.enablePersistence().catch(err => {
         console.warn("[Firebase Firestore] Falha ao habilitar persistência offline:", err.code);
@@ -39,8 +39,30 @@ if (typeof firebase !== 'undefined') {
  * FLAG DE MODO SIMULAÇÃO
  * Em produção, defina como false para desativar a automação de vendas/repasses.
  * Em desenvolvimento/demo, mantenha como true para ver dados se movimentando.
+ *
+ * IMPORTANTE: em produção esta flag DEVE permanecer false. Quando true, o app
+ * marca produtos como "Vendido" e emite repasses PIX automáticos fictícios a
+ * cada 15s, gerando vendas e pagamentos que não aconteceram de verdade.
  */
-const GOIANITA_SIMULATION_MODE = true;
+const GOIANITA_SIMULATION_MODE = false;
+
+/**
+ * Converte um valor monetário em texto (pt-BR) para número.
+ * Trata separador de milhar (ponto) e decimal (vírgula) corretamente.
+ * Exemplos: "R$ 1.399,00" -> 1399.00 | "399,90" -> 399.9 | "399.90" -> 399.9
+ */
+function parseMoedaBR(valor) {
+    if (typeof valor === 'number') return valor;
+    if (!valor) return 0;
+    let s = String(valor).replace(/[R$\s]/g, '');
+    if (s.indexOf(',') !== -1) {
+        // Vírgula presente: é o separador decimal; pontos são de milhar.
+        s = s.replace(/\./g, '').replace(',', '.');
+    }
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+}
+window.parseMoedaBR = parseMoedaBR;
 
 // Inicialização de chaves seguras no localStorage
 function initDatabase() {
@@ -65,7 +87,7 @@ function setupFirestoreSync() {
         console.warn("[Firebase] SDK não carregado. Operando local-only.");
         return;
     }
-    
+
     window.GoianitaAuth.onAuthStateChanged((user) => {
         if (user && !firestoreSyncInitialized) {
             firestoreSyncInitialized = true;
@@ -81,9 +103,20 @@ function setupFirestoreSync() {
             window.GoianitaFirestore.collection('clientes').onSnapshot(snapshot => {
                 const firebaseClientes = [];
                 snapshot.forEach(doc => firebaseClientes.push({ id: doc.id, ...doc.data() }));
-                
-                localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify(firebaseClientes));
-                
+
+                const localClientes = JSON.parse(localStorage.getItem(DB_KEYS.CLIENTES) || '[]');
+                const toUpload = localClientes.filter(localC => !firebaseClientes.some(fbC => fbC.id === localC.id));
+
+                toUpload.forEach(async (c) => {
+                    try { await window.GoianitaFirestore.collection('clientes').doc(c.id).set(c, {merge: true}); } catch(e){}
+                });
+
+                const merged = [...firebaseClientes, ...toUpload];
+                localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify(merged));
+
+                // Consolida duplicatas por CPF que possam ter vindo do merge (offline/online, multi-dispositivo).
+                try { if (window.GoianitaDB) window.GoianitaDB.utils.dedupeClientesByCpf(); } catch (e) { console.warn('[Dedupe] falhou:', e); }
+
                 window.dispatchEvent(new Event('goianitaDataChanged'));
                 if(syncCount < 3) checkSync();
             }, err => console.error("Erro no sync de clientes:", err));
@@ -92,9 +125,17 @@ function setupFirestoreSync() {
             window.GoianitaFirestore.collection('produtos').onSnapshot(snapshot => {
                 const firebaseProdutos = [];
                 snapshot.forEach(doc => firebaseProdutos.push({ id: doc.id, ...doc.data() }));
-                
-                localStorage.setItem(DB_KEYS.PRODUTOS, JSON.stringify(firebaseProdutos));
-                
+
+                const localProdutos = JSON.parse(localStorage.getItem(DB_KEYS.PRODUTOS) || '[]');
+                const toUpload = localProdutos.filter(localP => !firebaseProdutos.some(fbP => fbP.id === localP.id));
+
+                toUpload.forEach(async (p) => {
+                    try { await window.GoianitaFirestore.collection('produtos').doc(p.id).set(p, {merge: true}); } catch(e){}
+                });
+
+                const merged = [...firebaseProdutos, ...toUpload];
+                localStorage.setItem(DB_KEYS.PRODUTOS, JSON.stringify(merged));
+
                 window.dispatchEvent(new Event('goianitaDataChanged'));
                 if(syncCount < 3) checkSync();
             }, err => console.error("Erro no sync de produtos:", err));
@@ -103,9 +144,17 @@ function setupFirestoreSync() {
             window.GoianitaFirestore.collection('pagamentos').onSnapshot(snapshot => {
                 const firebasePagamentos = [];
                 snapshot.forEach(doc => firebasePagamentos.push({ id: doc.id, ...doc.data() }));
-                
-                localStorage.setItem(DB_KEYS.PAGAMENTOS, JSON.stringify(firebasePagamentos));
-                
+
+                const localPagamentos = JSON.parse(localStorage.getItem(DB_KEYS.PAGAMENTOS) || '[]');
+                const toUpload = localPagamentos.filter(localP => !firebasePagamentos.some(fbP => fbP.id === localP.id));
+
+                toUpload.forEach(async (p) => {
+                    try { await window.GoianitaFirestore.collection('pagamentos').doc(p.id).set(p, {merge: true}); } catch(e){}
+                });
+
+                const merged = [...firebasePagamentos, ...toUpload];
+                localStorage.setItem(DB_KEYS.PAGAMENTOS, JSON.stringify(merged));
+
                 window.dispatchEvent(new Event('goianitaDataChanged'));
                 if(syncCount < 3) checkSync();
             }, err => console.error("Erro no sync de pagamentos:", err));
@@ -124,7 +173,7 @@ function startAutomationSimulation() {
         const produtos = JSON.parse(localStorage.getItem(DB_KEYS.PRODUTOS) || '[]');
         const clientes = JSON.parse(localStorage.getItem(DB_KEYS.CLIENTES) || '[]');
         const pagamentos = JSON.parse(localStorage.getItem(DB_KEYS.PAGAMENTOS) || '[]');
-        
+
         // 1. Simular uma venda aleatória de produto "À Venda"
         const produtosAVenda = produtos.filter(p => p.status === 'À Venda');
         if (produtosAVenda.length > 0 && Math.random() > 0.4) {
@@ -142,10 +191,9 @@ function startAutomationSimulation() {
 
         // 2. Simular um repasse PIX automático para clientes com saldo pendente acumulado
         clientes.forEach(c => {
-            // Calcula valores pendentes do cliente
             const prodsCliente = produtos.filter(p => p.clienteId === c.id);
             const pagsCliente = pagamentos.filter(p => p.clienteId === c.id);
-            
+
             const produtosVendidos = prodsCliente.filter(p => p.status === 'Vendido' || p.status === 'Pago');
             let totalDisponivel = 0;
             let saldoBloqueado = 0;
@@ -159,7 +207,7 @@ function startAutomationSimulation() {
                 } else if (p.status === 'Vendido') {
                     const dataVenda = p.dataVenda || (p.statusHistorico && p.statusHistorico.find(h => h.status === 'Vendido')?.data) || p.dataEntrada;
                     const diasDesdeVenda = Math.floor((new Date() - new Date(dataVenda)) / (1000 * 60 * 60 * 24));
-                    
+
                     if (diasDesdeVenda >= 30) {
                         totalDisponivel += valorCliente;
                     } else {
@@ -168,12 +216,10 @@ function startAutomationSimulation() {
                 }
             });
 
-            // CORREÇÃO: totalPago deve ser calculado aqui no escopo correto
             const totalPago = pagsCliente.reduce((acc, p) => acc + (p.valor || 0), 0);
             const saldoDisponivel = Math.max(0, totalDisponivel - totalPago);
-            
+
             if (saldoDisponivel > 50 && Math.random() > 0.6) {
-                // Efetua repasse automático de todo o saldo disponível
                 const novoPag = {
                     id: 'pag_' + Date.now() + Math.random().toString(36).slice(2, 5),
                     clienteId: c.id,
@@ -184,8 +230,7 @@ function startAutomationSimulation() {
                     comprovante: 'AUTO_PIX_' + Math.random().toString(36).substring(2, 12).toUpperCase()
                 };
                 pagamentos.push(novoPag);
-                
-                // Atualiza também os produtos vendidos e liberados para status "Pago"
+
                 prodsCliente.forEach(p => {
                     if (p.status === 'Vendido') {
                         const dataVenda = p.dataVenda || (p.statusHistorico && p.statusHistorico.find(h => h.status === 'Vendido')?.data) || p.dataEntrada;
@@ -200,7 +245,7 @@ function startAutomationSimulation() {
                         }
                     }
                 });
-                
+
                 localStorage.setItem(DB_KEYS.PAGAMENTOS, JSON.stringify(pagamentos));
                 localStorage.setItem(DB_KEYS.PRODUTOS, JSON.stringify(produtos));
                 console.log(`[Automação] Repasse automático PIX de ${saldoDisponivel} realizado para ${c.nome}.`);
@@ -225,17 +270,22 @@ const db = {
         getById: (id) => db.clientes.getAll().find(c => c.id === id),
         save: async (cliente, skipSync = false) => {
             const clientesAtuais = db.clientes.getAll();
-            
+
+            // CPF/CNPJ normalizado (somente dígitos) — base para dedupe e ID determinístico.
+            const cpfLimpo = cliente.cpf ? String(cliente.cpf).replace(/\D/g, '') : '';
+
             // Validação de duplicidade de CPF/CNPJ para novos cadastros
-            if (!cliente.id) {
-                const cpfLimpo = cliente.cpf ? cliente.cpf.replace(/\D/g, '') : '';
-                if (cpfLimpo) {
-                    const duplicado = clientesAtuais.find(c => c.cpf && c.cpf.replace(/\D/g, '') === cpfLimpo);
-                    if (duplicado) {
-                        throw new Error(`Já existe um fornecedor cadastrado com o CPF/CNPJ ${cliente.cpf} (${duplicado.nome}).`);
-                    }
+            if (!cliente.id && cpfLimpo) {
+                const duplicado = clientesAtuais.find(c => c.cpf && String(c.cpf).replace(/\D/g, '') === cpfLimpo);
+                if (duplicado) {
+                    throw new Error(`Já existe um fornecedor cadastrado com o CPF/CNPJ ${cliente.cpf} (${duplicado.nome}).`);
                 }
             }
+
+            // ID determinístico baseado no CPF: o MESMO CPF sempre gera o MESMO registro/
+            // documento, evitando duplicatas entre cadastros offline/online e entre dispositivos.
+            // Sem CPF, usa timestamp como fallback.
+            const idNovo = cpfLimpo ? ('cli_' + cpfLimpo) : ('cli_' + Date.now());
 
             if (typeof firebase === 'undefined' || !window.GoianitaFirestore) {
                 const clientes = clientesAtuais;
@@ -243,19 +293,22 @@ const db = {
                     const index = clientes.findIndex(c => c.id === cliente.id);
                     if (index !== -1) clientes[index] = { ...clientes[index], ...cliente };
                 } else {
-                    cliente.id = 'cli_' + Date.now();
+                    cliente.id = idNovo;
                     cliente.dataCadastro = new Date().toISOString();
-                    clientes.push(cliente);
+                    // Se já existir registro com esse ID (corrida/reprocessamento), atualiza em vez de duplicar.
+                    const existente = clientes.findIndex(c => c.id === cliente.id);
+                    if (existente !== -1) clientes[existente] = { ...clientes[existente], ...cliente };
+                    else clientes.push(cliente);
                 }
                 localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify(clientes));
                 if (!skipSync) db.importExport.syncToGoogleSheets();
                 return cliente;
             }
 
-            const docRef = cliente.id 
+            const docRef = cliente.id
                 ? window.GoianitaFirestore.collection('clientes').doc(cliente.id)
-                : window.GoianitaFirestore.collection('clientes').doc();
-            
+                : window.GoianitaFirestore.collection('clientes').doc(idNovo);
+
             const id = docRef.id;
             const dataCadastro = cliente.dataCadastro || new Date().toISOString();
             const clienteFinal = {
@@ -269,14 +322,14 @@ const db = {
                 try {
                     const email = cliente.cpf.replace(/\D/g, '') + '@goianita.com.br';
                     const senha = cliente.senha || 'goianita123';
-                    
+
                     let secondaryApp;
                     try {
                         secondaryApp = firebase.app("Secondary");
                     } catch (e) {
                         secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
                     }
-                    
+
                     await secondaryApp.auth().createUserWithEmailAndPassword(email, senha);
                     await secondaryApp.auth().signOut();
                     console.log(`[Firebase Auth] Usuário criado de forma silenciosa (sem deslogar o admin): ${email}`);
@@ -293,7 +346,7 @@ const db = {
                 console.error("[Firebase] Erro ao salvar cliente:", err);
                 alert("Aviso: Falha ao salvar no banco em nuvem. Salvo apenas localmente.");
             }
-            
+
             const clientesLocais = db.clientes.getAll();
             const idx = clientesLocais.findIndex(c => c.id === id);
             if (idx !== -1) clientesLocais[idx] = cleanCliente;
@@ -304,14 +357,25 @@ const db = {
             return clienteFinal;
         },
         delete: async (id) => {
+            // Reúne o alvo + eventuais duplicados do mesmo CPF, para que a exclusão
+            // não deixe um registro-fantasma que o sync do Firestore traria de volta.
+            const alvo = db.clientes.getById(id);
+            const cpfLimpo = alvo && alvo.cpf ? String(alvo.cpf).replace(/\D/g, '') : '';
+            const idsRemover = db.clientes.getAll()
+                .filter(c => c.id === id || (cpfLimpo && c.cpf && String(c.cpf).replace(/\D/g, '') === cpfLimpo))
+                .map(c => c.id);
+            if (idsRemover.indexOf(id) === -1) idsRemover.push(id);
+
             if (typeof firebase !== 'undefined' && window.GoianitaFirestore) {
-                try {
-                    await window.GoianitaFirestore.collection('clientes').doc(id).delete();
-                } catch(err) {
-                    console.error("[Firebase] Erro ao excluir cliente:", err);
+                for (const rid of idsRemover) {
+                    try {
+                        await window.GoianitaFirestore.collection('clientes').doc(rid).delete();
+                    } catch(err) {
+                        console.error("[Firebase] Erro ao excluir cliente:", err);
+                    }
                 }
             }
-            const clientes = db.clientes.getAll().filter(c => c.id !== id);
+            const clientes = db.clientes.getAll().filter(c => idsRemover.indexOf(c.id) === -1);
             localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify(clientes));
             db.importExport.syncToGoogleSheets();
         }
@@ -358,20 +422,25 @@ const db = {
                 return produto;
             }
 
-            const docRef = produto.id 
+            const docRef = produto.id
                 ? window.GoianitaFirestore.collection('produtos').doc(produto.id)
                 : window.GoianitaFirestore.collection('produtos').doc();
-            
+
             const id = docRef.id;
             const sku = produto.sku || `GOI-PR-${Date.now().toString().slice(-4)}`;
             const dataEntrada = produto.dataEntrada || new Date().toISOString();
-            
+
             let dataLimite = produto.dataLimite;
             if (!dataLimite) {
                 const limite = new Date();
                 limite.setDate(limite.getDate() + 180);
                 dataLimite = limite.toISOString();
             }
+
+            // Detecta alteração de status comparando com o registro já persistido localmente,
+            // para manter o histórico consistente também no fluxo Firestore.
+            const anterior = produto.id ? db.produtos.getById(produto.id) : null;
+            const statusMudou = anterior && anterior.status !== produto.status;
 
             let statusHistorico = produto.statusHistorico || [];
             if (statusHistorico.length === 0) {
@@ -385,6 +454,12 @@ const db = {
                     status: produto.status,
                     data: new Date().toISOString(),
                     obs: produto.statusObs
+                });
+            } else if (statusMudou) {
+                statusHistorico.push({
+                    status: produto.status,
+                    data: new Date().toISOString(),
+                    obs: 'Alteração de status'
                 });
             }
 
@@ -480,7 +555,7 @@ const db = {
 
             // Vendidos (qualquer um vendido, pago ou não)
             const produtosVendidos = produtos.filter(p => p.status === 'Vendido' || p.status === 'Pago');
-            
+
             let totalDisponivel = 0;
             let saldoBloqueado = 0;
 
@@ -493,7 +568,7 @@ const db = {
                 } else if (p.status === 'Vendido') {
                     const dataVenda = p.dataVenda || (p.statusHistorico && p.statusHistorico.find(h => h.status === 'Vendido')?.data) || p.dataEntrada;
                     const diasDesdeVenda = Math.floor((new Date() - new Date(dataVenda)) / (1000 * 60 * 60 * 24));
-                    
+
                     if (diasDesdeVenda >= 30) {
                         totalDisponivel += valorCliente;
                     } else {
@@ -502,13 +577,8 @@ const db = {
                 }
             });
 
-            // Total gerado para o cliente
             const totalApostado = totalDisponivel + saldoBloqueado;
-
-            // Total que o cliente já recebeu
-            const totalPago = pagamentos.reduce((acc, p) => acc + p.valor, 0);
-
-            // Saldo atual pendente
+            const totalPago = pagamentos.reduce((acc, p) => acc + (p.valor || 0), 0);
             const saldoPendente = totalApostado - totalPago;
             const saldoDisponivel = Math.max(0, totalDisponivel - totalPago);
 
@@ -532,17 +602,17 @@ const db = {
 
             const totalEstoqueValor = produtos
                 .filter(p => p.status === 'À Venda')
-                .reduce((acc, p) => acc + p.precoVenda, 0);
+                .reduce((acc, p) => acc + (p.precoVenda || 0), 0);
 
             const totalVendas = produtos
                 .filter(p => p.status === 'Vendido' || p.status === 'Pago')
-                .reduce((acc, p) => acc + p.precoVenda, 0);
+                .reduce((acc, p) => acc + (p.precoVenda || 0), 0);
 
             const totalComissaoGoianita = produtos
                 .filter(p => p.status === 'Vendido' || p.status === 'Pago')
-                .reduce((acc, p) => acc + ((p.precoVenda * p.comissao) / 100), 0);
+                .reduce((acc, p) => acc + (((p.precoVenda || 0) * (p.comissao || 0)) / 100), 0);
 
-            const totalPagoFornecedores = pagamentos.reduce((acc, p) => acc + p.valor, 0);
+            const totalPagoFornecedores = pagamentos.reduce((acc, p) => acc + (p.valor || 0), 0);
 
             const saldoPagarFornecedores = (totalVendas - totalComissaoGoianita) - totalPagoFornecedores;
 
@@ -559,6 +629,84 @@ const db = {
                     return acc;
                 }, {})
             };
+        },
+
+        /**
+         * Consolida fornecedores duplicados pelo CPF/CNPJ.
+         * Mantém o cadastro mais antigo como canônico, completa campos vazios com os
+         * dados dos duplicados, remapeia os produtos para o registro canônico e remove
+         * os duplicados (local e no Firestore). Não apaga produtos nem pagamentos.
+         * Retorna true se consolidou algo. Seguro para rodar múltiplas vezes.
+         */
+        dedupeClientesByCpf: () => {
+            const norm = (s) => (s ? String(s).replace(/\D/g, '') : '');
+            const clientes = db.clientes.getAll();
+
+            const grupos = {};
+            const semCpf = [];
+            clientes.forEach(c => {
+                const key = norm(c.cpf);
+                if (!key) { semCpf.push(c); return; }
+                (grupos[key] = grupos[key] || []).push(c);
+            });
+
+            const idRemap = {};      // idDuplicado -> idCanonico
+            const idsRemovidos = [];
+            const canonicais = [];
+
+            Object.keys(grupos).forEach(key => {
+                const grupo = grupos[key];
+                if (grupo.length === 1) { canonicais.push(grupo[0]); return; }
+
+                // Canônico = cadastro mais antigo (preserva o registro original).
+                grupo.sort((a, b) => new Date(a.dataCadastro || 0) - new Date(b.dataCadastro || 0));
+                const canonico = grupo[0];
+
+                grupo.slice(1).forEach(dup => {
+                    // Completa campos vazios do canônico com os dados do duplicado.
+                    ['nome', 'telefone', 'email', 'chavePix', 'chavePixType', 'comissaoPadrao'].forEach(f => {
+                        const vazio = canonico[f] === undefined || canonico[f] === null || canonico[f] === '';
+                        if (vazio && dup[f] !== undefined && dup[f] !== '') canonico[f] = dup[f];
+                    });
+                    if (dup.id !== canonico.id) {
+                        idRemap[dup.id] = canonico.id;
+                        idsRemovidos.push(dup.id);
+                    }
+                });
+                canonicais.push(canonico);
+            });
+
+            if (idsRemovidos.length === 0) return false;
+
+            // Reescreve a lista de clientes sem duplicatas.
+            localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify([...canonicais, ...semCpf]));
+
+            // Remapeia produtos que apontavam para IDs removidos.
+            const produtos = db.produtos.getAll();
+            const produtosRemapeados = [];
+            produtos.forEach(p => {
+                if (idRemap[p.clienteId]) {
+                    p.clienteId = idRemap[p.clienteId];
+                    produtosRemapeados.push(p);
+                }
+            });
+            if (produtosRemapeados.length > 0) {
+                localStorage.setItem(DB_KEYS.PRODUTOS, JSON.stringify(produtos));
+            }
+
+            // Propaga a limpeza para o Firestore, se disponível.
+            if (typeof firebase !== 'undefined' && window.GoianitaFirestore) {
+                idsRemovidos.forEach(id => {
+                    window.GoianitaFirestore.collection('clientes').doc(id).delete().catch(() => {});
+                });
+                produtosRemapeados.forEach(p => {
+                    window.GoianitaFirestore.collection('produtos').doc(p.id).set({ clienteId: p.clienteId }, { merge: true }).catch(() => {});
+                });
+            }
+
+            console.warn(`[Dedupe] ${idsRemovidos.length} fornecedor(es) duplicado(s) consolidado(s) por CPF.`);
+            window.dispatchEvent(new Event('goianitaDataChanged'));
+            return true;
         }
     },
 
@@ -586,12 +734,12 @@ const db = {
         importClientesFromCsv: async (csvText) => {
             const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
             if (lines.length < 2) return { success: false, error: "Nenhuma linha de dados encontrada." };
-            
+
             const header = lines[0];
             let delimiter = ',';
             if (header.includes('\t')) delimiter = '\t';
             else if (header.includes(';')) delimiter = ';';
-            
+
             const parseRow = (row) => {
                 let result = [];
                 let current = '';
@@ -611,8 +759,8 @@ const db = {
                 return result;
             };
 
-            const headers = parseRow(header).map(h => h.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, ""));
-            
+            const headers = parseRow(header).map(h => h.toLowerCase().normalize("NFD").replace(/[^\x00-\x7F]/g, "").replace(/[^a-z0-9]/g, ""));
+
             const mapping = {
                 nome: headers.findIndex(h => h.includes('nome') || h.includes('cliente') || h === 'fornecedor'),
                 cpf: headers.findIndex(h => h.includes('cpf') || h.includes('documento')),
@@ -629,7 +777,7 @@ const db = {
 
             let importedCount = 0;
             let errors = [];
-            
+
             for (let i = 1; i < lines.length; i++) {
                 const cols = parseRow(lines[i]);
                 if (cols.length < 2) continue;
@@ -650,7 +798,7 @@ const db = {
                     chavePix: mapping.chavePix !== -1 ? cols[mapping.chavePix] : cpf,
                     comissaoPadrao: mapping.comissaoPadrao !== -1 && cols[mapping.comissaoPadrao] ? parseFloat(cols[mapping.comissaoPadrao].replace('%','').replace(',','.')) : 50
                 };
-                
+
                 try {
                     await db.clientes.save(cliente, true);
                     importedCount++;
@@ -658,7 +806,7 @@ const db = {
                     errors.push(`Linha ${i + 1}: Erro ao salvar no Firestore: ${err.message}`);
                 }
             }
-            
+
             // Sincroniza planilha Google apenas uma vez ao final do lote
             await db.importExport.syncToGoogleSheets();
             return { success: true, count: importedCount, errors: errors };
@@ -666,12 +814,12 @@ const db = {
         importProdutosFromCsv: async (csvText) => {
             const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
             if (lines.length < 2) return { success: false, error: "Nenhuma linha de dados encontrada." };
-            
+
             const header = lines[0];
             let delimiter = ',';
             if (header.includes('\t')) delimiter = '\t';
             else if (header.includes(';')) delimiter = ';';
-            
+
             const parseRow = (row) => {
                 let result = [];
                 let current = '';
@@ -691,8 +839,8 @@ const db = {
                 return result;
             };
 
-            const headers = parseRow(header).map(h => h.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, ""));
-            
+            const headers = parseRow(header).map(h => h.toLowerCase().normalize("NFD").replace(/[^\x00-\x7F]/g, "").replace(/[^a-z0-9]/g, ""));
+
             const mapping = {
                 cpfFornecedor: headers.findIndex(h => h.includes('cpffornecedor') || h.includes('cpfcliente') || h.includes('cpf')),
                 nome: headers.findIndex(h => h.includes('nome') || h.includes('produto') || h.includes('titulo')),
@@ -742,7 +890,7 @@ const db = {
                     continue;
                 }
 
-                const precoVenda = parseFloat(precoVal.replace('R$','').replace('.','').replace(',','.').trim());
+                const precoVenda = parseMoedaBR(precoVal);
                 const comissao = mapping.comissao !== -1 && cols[mapping.comissao] ? parseFloat(cols[mapping.comissao].replace('%','').replace(',','.')) : cliente.comissaoPadrao;
 
                 const produto = {
@@ -760,7 +908,7 @@ const db = {
                     altura: mapping.altura !== -1 && cols[mapping.altura] ? parseFloat(cols[mapping.altura].replace(',','.')) : 0,
                     largura: mapping.largura !== -1 && cols[mapping.largura] ? parseFloat(cols[mapping.largura].replace(',','.')) : 0,
                     comprimento: mapping.comprimento !== -1 && cols[mapping.comprimento] ? parseFloat(cols[mapping.comprimento].replace(',','.')) : 0,
-                    precoSugerido: mapping.precoSugerido !== -1 && cols[mapping.precoSugerido] ? parseFloat(cols[mapping.precoSugerido].replace(',','.')) : precoVenda,
+                    precoSugerido: mapping.precoSugerido !== -1 && cols[mapping.precoSugerido] ? parseMoedaBR(cols[mapping.precoSugerido]) : precoVenda,
                     status: mapping.status !== -1 && cols[mapping.status] ? cols[mapping.status] : 'Em Triagem',
                     obsInternas: mapping.obsInternas !== -1 ? cols[mapping.obsInternas] : 'Importado via planilha'
                 };
@@ -781,7 +929,7 @@ const db = {
             // Sincroniza via endpoint do Google Apps Script (Webhook)
             const backupData = db.importExport.exportBackup();
             const webAppUrl = "https://script.google.com/macros/s/AKfycbzD9m4aqzD9m4aqz5DDVgajR3qmLykFUlZsUhM-7IwyAwDWP3EXGFKbPfWDF0OYgo7S45gy5E8/exec";
-            
+
             console.log("[Planilha Google] Iniciando sincronização assíncrona...");
             try {
                 // Sincronização em background sem travar a UI
@@ -803,3 +951,7 @@ const db = {
 };
 
 window.GoianitaDB = db;
+
+// Ao carregar, consolida fornecedores duplicados por CPF já existentes na base local
+// (cura dados antigos criados antes do ID determinístico). Seguro rodar sempre.
+try { db.utils.dedupeClientesByCpf(); } catch (e) { console.warn('[Dedupe] falhou ao iniciar:', e); }
