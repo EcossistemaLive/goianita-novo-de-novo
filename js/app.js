@@ -498,14 +498,16 @@ function renderProdutosList() {
                     <td>${p.comissao}%</td>
                     <td><strong>${formatCurrency(valorCliente)}</strong></td>
                     <td>${getStatusBadge(p.status)}</td>
-                    <td>
-                        <a href="produto-detalhe.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Gerenciar</a>
+                    <td style="white-space: nowrap;">
+                        <button type="button" onclick="window.abrirEditarProduto('${esc(p.id)}')" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;" title="Editar produto"><i class="fa-solid fa-pen"></i></button>
+                        <a href="produto-detalhe.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;" title="Gerenciar (mídias, status, laudo)"><i class="fa-solid fa-gear"></i></a>
+                        <button type="button" onclick="window.excluirProdutoLista('${esc(p.id)}')" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px; color: #d32f2f; border-color: #f0c4c4;" title="Excluir produto"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
         }).join('');
     }
-    
+
     drawTable(produtos);
     
     // Busca e Filtros
@@ -532,6 +534,73 @@ function renderProdutosList() {
     if (filterStatus) filterStatus.addEventListener('change', applyFilters);
     if (filterCategoria) filterCategoria.addEventListener('change', applyFilters);
 }
+
+// --- EDITAR / EXCLUIR PRODUTO (lista de Produtos Consignados) ---
+// Funções globais chamadas via onclick inline nos botões da lista. Usam db.produtos.save
+// e db.produtos.delete, que já sincronizam com o Firestore e a planilha Google.
+window.abrirEditarProduto = function(id) {
+    const produto = window.GoianitaDB.produtos.getById(id);
+    if (!produto) { alert('Produto não encontrado.'); return; }
+    const modal = document.getElementById('modal-editar-produto');
+    if (!modal) { alert('Modal de edição não encontrado nesta página.'); return; }
+    document.getElementById('edit-prod-id').value = produto.id;
+    document.getElementById('edit-prod-nome').value = produto.nome || '';
+    document.getElementById('edit-prod-categoria').value = produto.categoria || 'Outros';
+    document.getElementById('edit-prod-marca').value = produto.marca || '';
+    document.getElementById('edit-prod-preco').value = (produto.precoVenda != null) ? produto.precoVenda : '';
+    document.getElementById('edit-prod-comissao').value = (produto.comissao != null) ? produto.comissao : '';
+    document.getElementById('edit-prod-status').value = produto.status || 'Em Triagem';
+    modal.style.display = 'flex';
+};
+
+window.fecharEditarProduto = function() {
+    const modal = document.getElementById('modal-editar-produto');
+    if (modal) modal.style.display = 'none';
+};
+
+window.salvarEdicaoProduto = async function() {
+    const id = document.getElementById('edit-prod-id').value;
+    const produto = window.GoianitaDB.produtos.getById(id);
+    if (!produto) { alert('Produto não encontrado.'); return; }
+
+    const nome = document.getElementById('edit-prod-nome').value.trim();
+    const precoStr = document.getElementById('edit-prod-preco').value;
+    if (!nome) { alert('Informe o nome do produto.'); return; }
+    if (!precoStr) { alert('Informe o preço de venda.'); return; }
+
+    produto.nome = nome;
+    produto.categoria = document.getElementById('edit-prod-categoria').value;
+    produto.marca = document.getElementById('edit-prod-marca').value;
+    produto.precoVenda = parseMoeda(precoStr);
+    produto.comissao = parseFloat(document.getElementById('edit-prod-comissao').value) || produto.comissao || 50;
+    produto.status = document.getElementById('edit-prod-status').value;
+
+    const btn = document.getElementById('btn-salvar-edicao-produto');
+    const original = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+    try {
+        await window.GoianitaDB.produtos.save(produto);
+        alert('Produto atualizado com sucesso!');
+        window.location.reload();
+    } catch (err) {
+        alert('Erro ao salvar: ' + err.message);
+        if (btn) { btn.disabled = false; btn.textContent = original; }
+    }
+};
+
+window.excluirProdutoLista = async function(id) {
+    const produto = window.GoianitaDB.produtos.getById(id);
+    if (!produto) { alert('Produto não encontrado.'); return; }
+    if (!confirm(`Excluir o produto "${produto.nome}" (${produto.sku})?\n\nEsta ação não pode ser desfeita e remove também do Firebase.`)) return;
+    try {
+        await window.GoianitaDB.produtos.delete(id);
+        alert('Produto excluído com sucesso.');
+        window.location.reload();
+    } catch (err) {
+        alert('Erro ao excluir: ' + err.message);
+    }
+};
 
 // --- NOVO PRODUTO ---
 function renderProdutoNovo() {
