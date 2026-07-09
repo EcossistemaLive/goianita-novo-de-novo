@@ -7,7 +7,8 @@ const DB_KEYS = {
     CLIENTES: 'goianita_consignacao_clientes',
     PRODUTOS: 'goianita_consignacao_produtos',
     PAGAMENTOS: 'goianita_consignacao_pagamentos',
-    CONFIG: 'goianita_consignacao_config'
+    CONFIG: 'goianita_consignacao_config',
+    TOMBSTONES: 'goianita_consignacao_tombstones'
 };
 
 // Configuração do Firebase fornecida pelo usuário
@@ -64,6 +65,36 @@ function parseMoedaBR(valor) {
 }
 window.parseMoedaBR = parseMoedaBR;
 
+/**
+ * TOMBSTONES (marcas de exclusão)
+ * Guardam os IDs de registros que foram apagados de propósito. A sincronização em
+ * tempo real usa isso para NUNCA re-enviar/re-exibir um item excluído — resolvendo o
+ * bug de "ressurreição" mesmo entre dispositivos/abas diferentes. Ao recadastrar um
+ * item (save), o ID sai da lista de tombstones para voltar a existir normalmente.
+ */
+function getTombstones() {
+    try { return JSON.parse(localStorage.getItem(DB_KEYS.TOMBSTONES) || '{}'); }
+    catch (e) { return {}; }
+}
+function addTombstone(colecao, id) {
+    if (!id) return;
+    const t = getTombstones();
+    t[colecao] = t[colecao] || [];
+    if (!t[colecao].includes(id)) t[colecao].push(id);
+    localStorage.setItem(DB_KEYS.TOMBSTONES, JSON.stringify(t));
+}
+function removeTombstone(colecao, id) {
+    if (!id) return;
+    const t = getTombstones();
+    if (t[colecao] && t[colecao].includes(id)) {
+        t[colecao] = t[colecao].filter(x => x !== id);
+        localStorage.setItem(DB_KEYS.TOMBSTONES, JSON.stringify(t));
+    }
+}
+function tombstonesDe(colecao) {
+    return getTombstones()[colecao] || [];
+}
+
 // Inicialização de chaves seguras no localStorage
 function initDatabase() {
     if (!localStorage.getItem(DB_KEYS.CLIENTES)) {
@@ -101,11 +132,20 @@ function setupFirestoreSync() {
 
             // Sincronizar clientes
             window.GoianitaFirestore.collection('clientes').onSnapshot(snapshot => {
+                const tomb = tombstonesDe('clientes');
                 const firebaseClientes = [];
-                snapshot.forEach(doc => firebaseClientes.push({ id: doc.id, ...doc.data() }));
+                snapshot.forEach(doc => {
+                    if (tomb.includes(doc.id)) {
+                        // Item marcado como excluído mas ainda presente no Firebase: apaga de novo e ignora.
+                        window.GoianitaFirestore.collection('clientes').doc(doc.id).delete().catch(() => {});
+                    } else {
+                        firebaseClientes.push({ id: doc.id, ...doc.data() });
+                    }
+                });
 
-                const localClientes = JSON.parse(localStorage.getItem(DB_KEYS.CLIENTES) || '[]');
-                const toUpload = localClientes.filter(localC => !firebaseClientes.some(fbC => fbC.id === localC.id));
+                const localClientes = JSON.parse(localStorage.getItem(DB_KEYS.CLIENTES) || '[]')
+                    .filter(c => !tomb.includes(c.id));
+                const toUpload = localClientes.filter(localC => !tomb.includes(localC.id) && !firebaseClientes.some(fbC => fbC.id === localC.id));
 
                 toUpload.forEach(async (c) => {
                     try { await window.GoianitaFirestore.collection('clientes').doc(c.id).set(c, {merge: true}); } catch(e){}
@@ -123,11 +163,19 @@ function setupFirestoreSync() {
 
             // Sincronizar produtos
             window.GoianitaFirestore.collection('produtos').onSnapshot(snapshot => {
+                const tomb = tombstonesDe('produtos');
                 const firebaseProdutos = [];
-                snapshot.forEach(doc => firebaseProdutos.push({ id: doc.id, ...doc.data() }));
+                snapshot.forEach(doc => {
+                    if (tomb.includes(doc.id)) {
+                        window.GoianitaFirestore.collection('produtos').doc(doc.id).delete().catch(() => {});
+                    } else {
+                        firebaseProdutos.push({ id: doc.id, ...doc.data() });
+                    }
+                });
 
-                const localProdutos = JSON.parse(localStorage.getItem(DB_KEYS.PRODUTOS) || '[]');
-                const toUpload = localProdutos.filter(localP => !firebaseProdutos.some(fbP => fbP.id === localP.id));
+                const localProdutos = JSON.parse(localStorage.getItem(DB_KEYS.PRODUTOS) || '[]')
+                    .filter(p => !tomb.includes(p.id));
+                const toUpload = localProdutos.filter(localP => !tomb.includes(localP.id) && !firebaseProdutos.some(fbP => fbP.id === localP.id));
 
                 toUpload.forEach(async (p) => {
                     try { await window.GoianitaFirestore.collection('produtos').doc(p.id).set(p, {merge: true}); } catch(e){}
@@ -287,6 +335,11 @@ const db = {
             // Sem CPF, usa timestamp como fallback.
             const idNovo = cpfLimpo ? ('cli_' + cpfLimpo) : ('cli_' + Date.now());
 
+            // Cadastrar/editar reativa o registro: remove qualquer tombstone desse ID
+            // (importante porque o ID é determinístico por CPF — permite recadastrar
+            // um fornecedor que havia sido excluído).
+            removeTombstone('clientes', cliente.id || idNovo);
+
             if (typeof firebase === 'undefined' || !window.GoianitaFirestore) {
                 const clientes = clientesAtuais;
                 if (cliente.id) {
@@ -365,6 +418,7 @@ const db = {
                 .filter(c => c.id === id || (cpfLimpo && c.cpf && String(c.cpf).replace(/\D/g, '') === cpfLimpo))
                 .map(c => c.id);
             if (idsRemover.indexOf(id) === -1) idsRemover.push(id);
+            idsRemover.forEach(rid => addTombstone('clientes', rid));
 
             // Remove do localStorage ANTES do Firestore (mesma correção de produtos.delete):
             // evita que o sync em tempo real re-envie o cliente durante o await.
@@ -499,6 +553,7 @@ const db = {
             // em tempo real disparar durante o await, o item já não existe localmente e a
             // rotina de sync NÃO o re-envia de volta ao Firebase (bug de "ressurreição":
             // o produto voltava a aparecer na lista mesmo após confirmar a exclusão).
+            addTombstone('produtos', id);
             const produtos = db.produtos.getAll().filter(p => p.id !== id);
             localStorage.setItem(DB_KEYS.PRODUTOS, JSON.stringify(produtos));
 
@@ -685,6 +740,9 @@ const db = {
             });
 
             if (idsRemovidos.length === 0) return false;
+
+            // Marca os duplicados removidos como tombstone para não voltarem pelo sync.
+            idsRemovidos.forEach(rid => addTombstone('clientes', rid));
 
             // Reescreve a lista de clientes sem duplicatas.
             localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify([...canonicais, ...semCpf]));
@@ -931,6 +989,34 @@ const db = {
 
             await db.importExport.syncToGoogleSheets();
             return { success: true, count: importedCount, errors: errors };
+        },
+        /**
+         * Zera TUDO de verdade: apaga também os documentos do Firestore (não só o local).
+         * Antes, "zerar" limpava só o localStorage e o sync trazia os dados de volta.
+         */
+        zerarTudo: async () => {
+            // 1. Limpa local e tombstones.
+            localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify([]));
+            localStorage.setItem(DB_KEYS.PRODUTOS, JSON.stringify([]));
+            localStorage.setItem(DB_KEYS.PAGAMENTOS, JSON.stringify([]));
+            localStorage.setItem(DB_KEYS.TOMBSTONES, JSON.stringify({}));
+
+            // 2. Apaga os documentos no Firestore, coleção por coleção.
+            if (typeof firebase !== 'undefined' && window.GoianitaFirestore) {
+                for (const col of ['clientes', 'produtos', 'pagamentos']) {
+                    try {
+                        const snap = await window.GoianitaFirestore.collection(col).get();
+                        for (const doc of snap.docs) {
+                            try { await doc.ref.delete(); } catch (e) {}
+                        }
+                    } catch (e) {
+                        console.error(`[Zerar] Falha ao limpar coleção ${col}:`, e);
+                    }
+                }
+            }
+
+            // 3. Espelha o estado vazio na planilha.
+            await db.importExport.syncToGoogleSheets();
         },
         syncToGoogleSheets: async () => {
             // Planilha Google do cliente: https://docs.google.com/spreadsheets/d/1M7vl4afuq1lziBeq2QUZ3ieEN3HyGTW7BqUCmfXp3_8/edit

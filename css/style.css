@@ -792,14 +792,14 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Estilos de Impressão */
 @media print {
-    body * {
-        visibility: hidden;
-    }
-    #print-area, #print-area * {
-        visibility: visible;
+    /* Oculta toda a interface com display:none (não ocupa espaço, então NÃO gera
+       páginas em branco). Mostra apenas a área de impressão. */
+    body > *:not(#print-area) {
+        display: none !important;
     }
     #print-area {
-        position: absolute;
+        display: block !important;
+        position: static;
         left: 0;
         top: 0;
         width: 100%;
