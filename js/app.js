@@ -498,10 +498,8 @@ function renderProdutosList() {
                     <td>${p.comissao}%</td>
                     <td><strong>${formatCurrency(valorCliente)}</strong></td>
                     <td>${getStatusBadge(p.status)}</td>
-                    <td style="white-space: nowrap;">
-                        <button type="button" onclick="window.abrirEditarProduto('${esc(p.id)}')" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;" title="Editar produto"><i class="fa-solid fa-pen"></i></button>
-                        <a href="produto-detalhe.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;" title="Gerenciar (mídias, status, laudo)"><i class="fa-solid fa-gear"></i></a>
-                        <button type="button" onclick="window.excluirProdutoLista('${esc(p.id)}')" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px; color: #d32f2f; border-color: #f0c4c4;" title="Excluir produto"><i class="fa-solid fa-trash"></i></button>
+                    <td>
+                        <a href="produto-detalhe.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Gerenciar</a>
                     </td>
                 </tr>
             `;
@@ -589,14 +587,23 @@ window.salvarEdicaoProduto = async function() {
     }
 };
 
-window.excluirProdutoLista = async function(id) {
+// Chamadas pelos botões dentro da ficha do produto (produto-detalhe.html).
+// Leem o id do produto direto da URL, então funcionam via onclick inline sem
+// precisar de wiring dinâmico (evita empilhamento de handlers).
+window.editarProdutoAtual = function() {
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (id) window.abrirEditarProduto(id);
+};
+
+window.excluirProdutoAtual = async function() {
+    const id = new URLSearchParams(window.location.search).get('id');
     const produto = window.GoianitaDB.produtos.getById(id);
     if (!produto) { alert('Produto não encontrado.'); return; }
     if (!confirm(`Excluir o produto "${produto.nome}" (${produto.sku})?\n\nEsta ação não pode ser desfeita e remove também do Firebase.`)) return;
     try {
         await window.GoianitaDB.produtos.delete(id);
         alert('Produto excluído com sucesso.');
-        window.location.reload();
+        window.location.href = 'produtos.html';
     } catch (err) {
         alert('Erro ao excluir: ' + err.message);
     }

@@ -79,6 +79,12 @@
                     <a href="produtos.html" class="btn btn-secondary">
                         <i class="fa-solid fa-arrow-left"></i> Voltar à Lista
                     </a>
+                    <button type="button" onclick="window.editarProdutoAtual()" class="btn btn-primary">
+                        <i class="fa-solid fa-pen"></i> Editar Produto
+                    </button>
+                    <button type="button" onclick="window.excluirProdutoAtual()" class="btn btn-secondary" style="color: #d32f2f; border-color: #f0c4c4;">
+                        <i class="fa-solid fa-trash"></i> Excluir
+                    </button>
                 </div>
             </header>
 
@@ -206,6 +212,71 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal Editar Produto -->
+    <div id="modal-editar-produto" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+        <div class="form-card" style="width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;">
+            <div class="page-header" style="margin-bottom: 20px;">
+                <h3>Editar Produto</h3>
+                <button type="button" onclick="window.fecharEditarProduto()" class="btn btn-secondary" style="padding: 6px 12px;">X</button>
+            </div>
+
+            <input type="hidden" id="edit-prod-id">
+
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label class="form-label" for="edit-prod-nome">Nome do Produto *</label>
+                <input type="text" id="edit-prod-nome" class="form-control" style="width: 100%;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label class="form-label" for="edit-prod-categoria">Categoria</label>
+                <select id="edit-prod-categoria" class="filter-select" style="width: 100%;">
+                    <option value="Cozinha e Mesa">Cozinha e Mesa</option>
+                    <option value="Decoração">Decoração</option>
+                    <option value="Tapeçaria">Tapeçaria</option>
+                    <option value="Banheiro">Banheiro</option>
+                    <option value="Sala de Estar">Sala de Estar</option>
+                    <option value="Jardim">Jardim</option>
+                    <option value="Colecionáveis">Colecionáveis</option>
+                    <option value="Arte">Arte</option>
+                    <option value="Eletrodomésticos">Eletrodomésticos</option>
+                    <option value="Outros">Outros</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label class="form-label" for="edit-prod-marca">Marca</label>
+                <input type="text" id="edit-prod-marca" class="form-control" style="width: 100%;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label class="form-label" for="edit-prod-preco">Preço de Venda (R$) *</label>
+                <input type="number" step="0.01" id="edit-prod-preco" class="form-control" style="width: 100%;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label class="form-label" for="edit-prod-comissao">Comissão Goianita (%)</label>
+                <input type="number" id="edit-prod-comissao" class="form-control" style="width: 100%;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label" for="edit-prod-status">Status</label>
+                <select id="edit-prod-status" class="filter-select" style="width: 100%;">
+                    <option value="Em Triagem">Em Triagem</option>
+                    <option value="À Venda">À Venda</option>
+                    <option value="Vendido">Vendido</option>
+                    <option value="Pago">Pago</option>
+                    <option value="Devolução Solicitada">Devolução Solicitada</option>
+                    <option value="Devolvido">Devolvido</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" onclick="window.fecharEditarProduto()" class="btn btn-secondary">Cancelar</button>
+                <button type="button" id="btn-salvar-edicao-produto" onclick="window.salvarEdicaoProduto()" class="btn btn-primary">Salvar Alterações</button>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts de dados e controle -->
