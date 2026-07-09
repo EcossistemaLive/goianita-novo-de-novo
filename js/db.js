@@ -366,6 +366,11 @@ const db = {
                 .map(c => c.id);
             if (idsRemover.indexOf(id) === -1) idsRemover.push(id);
 
+            // Remove do localStorage ANTES do Firestore (mesma correção de produtos.delete):
+            // evita que o sync em tempo real re-envie o cliente durante o await.
+            const clientes = db.clientes.getAll().filter(c => idsRemover.indexOf(c.id) === -1);
+            localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify(clientes));
+
             if (typeof firebase !== 'undefined' && window.GoianitaFirestore) {
                 for (const rid of idsRemover) {
                     try {
@@ -375,8 +380,6 @@ const db = {
                     }
                 }
             }
-            const clientes = db.clientes.getAll().filter(c => idsRemover.indexOf(c.id) === -1);
-            localStorage.setItem(DB_KEYS.CLIENTES, JSON.stringify(clientes));
             db.importExport.syncToGoogleSheets();
         }
     },
@@ -492,6 +495,13 @@ const db = {
             return produtoFinal;
         },
         delete: async (id) => {
+            // Remove do localStorage ANTES de apagar do Firestore. Assim, quando o listener
+            // em tempo real disparar durante o await, o item já não existe localmente e a
+            // rotina de sync NÃO o re-envia de volta ao Firebase (bug de "ressurreição":
+            // o produto voltava a aparecer na lista mesmo após confirmar a exclusão).
+            const produtos = db.produtos.getAll().filter(p => p.id !== id);
+            localStorage.setItem(DB_KEYS.PRODUTOS, JSON.stringify(produtos));
+
             if (typeof firebase !== 'undefined' && window.GoianitaFirestore) {
                 try {
                     await window.GoianitaFirestore.collection('produtos').doc(id).delete();
@@ -499,8 +509,6 @@ const db = {
                     console.error("[Firebase] Erro ao excluir produto:", err);
                 }
             }
-            const produtos = db.produtos.getAll().filter(p => p.id !== id);
-            localStorage.setItem(DB_KEYS.PRODUTOS, JSON.stringify(produtos));
             db.importExport.syncToGoogleSheets();
         }
     },
