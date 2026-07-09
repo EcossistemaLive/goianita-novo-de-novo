@@ -264,7 +264,8 @@ function renderClientesList() {
 
     // Formulário de novo cliente (se estiver na mesma página em modal, ou capturando submit da página de cadastro)
     const form = document.getElementById('cliente-form');
-    if (form) {
+    if (form && !form.dataset.handlerBound) {
+        form.dataset.handlerBound = '1';
         // Autofill da chave Pix ao mudar o tipo
         const selectPixType = document.getElementById('cli-pix-type');
         if (selectPixType) {
@@ -372,6 +373,8 @@ function renderClienteDetalhe() {
     const btnPagar = document.getElementById('btn-pagar-cliente');
     if (btnPagar && role === 'admin') {
         btnPagar.disabled = financeiro.saldoDisponivel <= 0;
+        if (!btnPagar.dataset.handlerBound) {
+        btnPagar.dataset.handlerBound = '1';
         btnPagar.addEventListener('click', () => {
             const valorPagar = prompt(`Confirmar pagamento via PIX para este cliente?\nValor Disponível (Liberado): ${formatCurrency(financeiro.saldoDisponivel)}\nSaldo Bloqueado (Vendas < 30 dias): ${formatCurrency(financeiro.saldoBloqueado)}\n\nDigite o valor para transferir:`, financeiro.saldoDisponivel.toFixed(2));
             if (valorPagar) {
@@ -398,10 +401,12 @@ function renderClienteDetalhe() {
                 }
             }
         });
+        }
     }
 
     const btnExcluir = document.getElementById('btn-excluir-cliente');
-    if (btnExcluir && role === 'admin') {
+    if (btnExcluir && role === 'admin' && !btnExcluir.dataset.handlerBound) {
+        btnExcluir.dataset.handlerBound = '1';
         btnExcluir.addEventListener('click', () => {
             const hasProdutos = window.GoianitaDB.produtos.getByCliente(id).length > 0;
             if (hasProdutos) {
@@ -593,9 +598,12 @@ function renderProdutoNovo() {
     }
 
 
-    // Submete
+    // Submete — bind ÚNICO. renderProdutoNovo pode rodar várias vezes (evento
+    // goianitaDataChanged do Firestore); sem este guard o handler empilha e o produto
+    // é cadastrado várias vezes num clique só.
     const form = document.getElementById('produto-form');
-    if (form) {
+    if (form && !form.dataset.handlerBound) {
+        form.dataset.handlerBound = '1';
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             
@@ -894,7 +902,8 @@ function renderProdutoDetalhe() {
 
     // Upload de Mídias
     const uploadInput = document.getElementById('media-upload-input');
-    if (uploadInput) {
+    if (uploadInput && !uploadInput.dataset.handlerBound) {
+        uploadInput.dataset.handlerBound = '1';
         uploadInput.addEventListener('change', async (e) => {
             const files = e.target.files;
             if (!files || files.length === 0) return;
@@ -973,7 +982,8 @@ function renderProdutoDetalhe() {
         });
     }
 
-    if (statusSelect) {
+    if (statusSelect && !statusSelect.dataset.handlerBound) {
+        statusSelect.dataset.handlerBound = '1';
         statusSelect.value = produto.status;
         statusSelect.addEventListener('change', () => {
             const novoStatus = statusSelect.value;
