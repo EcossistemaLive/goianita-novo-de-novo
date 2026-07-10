@@ -141,6 +141,19 @@ function parseMoeda(valor) {
     return isNaN(n) ? 0 : n;
 }
 
+/**
+ * Atualiza o innerHTML de uma tabela SOMENTE se o conteúdo mudou.
+ * Evita reconstruir o DOM a cada evento goianitaDataChanged (que o Firebase dispara
+ * várias vezes) — o que recriava os botões embaixo do cursor, causando o hover piscando
+ * e cliques perdidos nos botões "Visualizar"/"Gerenciar".
+ */
+function renderTabela(tableBody, html) {
+    if (!tableBody) return;
+    if (tableBody.dataset.lastHtml === html) return; // nada mudou → não mexe no DOM
+    tableBody.dataset.lastHtml = html;
+    tableBody.innerHTML = html;
+}
+
 function formatCurrency(value) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
@@ -229,7 +242,7 @@ function renderClientesList() {
     const clientes = window.GoianitaDB.clientes.getAll();
     
     function drawTable(list) {
-        tableBody.innerHTML = list.map(c => {
+        renderTabela(tableBody, list.map(c => {
             const financeiro = window.GoianitaDB.utils.calcularValoresCliente(c.id);
             return `
                 <tr>
@@ -243,9 +256,9 @@ function renderClientesList() {
                     </td>
                 </tr>
             `;
-        }).join('');
+        }).join(''));
     }
-    
+
     drawTable(clientes);
     
     // Filtro de Busca
@@ -486,7 +499,7 @@ function renderProdutosList() {
     const produtos = window.GoianitaDB.produtos.getAll();
     
     function drawTable(list) {
-        tableBody.innerHTML = list.map(p => {
+        renderTabela(tableBody, list.map(p => {
             const cliente = window.GoianitaDB.clientes.getById(p.clienteId) || { nome: 'Desconhecido' };
             const valorCliente = p.precoVenda - (p.precoVenda * p.comissao / 100);
             return `
@@ -503,7 +516,7 @@ function renderProdutosList() {
                     </td>
                 </tr>
             `;
-        }).join('');
+        }).join(''));
     }
 
     drawTable(produtos);
