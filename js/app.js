@@ -300,11 +300,15 @@ function renderClientesList() {
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
+            const elEnd = document.getElementById('cli-endereco');
+            const elCont = document.getElementById('cli-contato');
             const novoCliente = {
                 nome: document.getElementById('cli-nome').value,
                 cpf: document.getElementById('cli-cpf').value,
                 telefone: document.getElementById('cli-tel').value,
                 email: document.getElementById('cli-email').value,
+                endereco: elEnd ? elEnd.value : '',
+                contato: elCont ? elCont.value : '',
                 chavePixType: document.getElementById('cli-pix-type').value,
                 chavePix: document.getElementById('cli-pix').value,
                 comissaoPadrao: parseFloat(document.getElementById('cli-comissao').value) || 50,
@@ -561,6 +565,10 @@ window.abrirEditarProduto = function(id) {
     document.getElementById('edit-prod-nome').value = produto.nome || '';
     document.getElementById('edit-prod-categoria').value = produto.categoria || 'Outros';
     document.getElementById('edit-prod-marca').value = produto.marca || '';
+    const elEmb = document.getElementById('edit-prod-embalagem');
+    if (elEmb) elEmb.value = produto.embalagem || '';
+    const elPrev = document.getElementById('edit-prod-prevvenda');
+    if (elPrev) elPrev.value = produto.prevVenda || '';
     document.getElementById('edit-prod-preco').value = (produto.precoVenda != null) ? produto.precoVenda : '';
     document.getElementById('edit-prod-comissao').value = (produto.comissao != null) ? produto.comissao : '';
     document.getElementById('edit-prod-status').value = produto.status || 'Em Triagem';
@@ -585,6 +593,10 @@ window.salvarEdicaoProduto = async function() {
     produto.nome = nome;
     produto.categoria = document.getElementById('edit-prod-categoria').value;
     produto.marca = document.getElementById('edit-prod-marca').value;
+    const embEl = document.getElementById('edit-prod-embalagem');
+    if (embEl) produto.embalagem = embEl.value;
+    const prevEl = document.getElementById('edit-prod-prevvenda');
+    if (prevEl) produto.prevVenda = prevEl.value;
     produto.precoVenda = parseMoeda(precoStr);
     produto.comissao = parseFloat(document.getElementById('edit-prod-comissao').value) || produto.comissao || 50;
     produto.status = document.getElementById('edit-prod-status').value;
@@ -1355,6 +1367,97 @@ function imprimirContratoCliente() {
     
     document.body.removeChild(printArea);
 }
+
+// --- FINANCEIRO GERAL ---
+// --- GERAÇÃO DE DOCUMENTOS .DOCX (Nota de Entrada / Recibo de Devolução) ---
+const GOIANITA_MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+// Número determinístico da Nota (mesmo fornecedor gera sempre o mesmo Nº,
+// para o Recibo poder referenciá-lo).
+function numeroNota(cliente) {
+    const dig = String((cliente && (cliente.cpf || cliente.id)) || '').replace(/\D/g, '');
+    const base = dig ? dig.slice(-6).padStart(6, '0') : String(Date.now()).slice(-6);
+    return 'NE-' + base;
+}
+
+function fmtMoedaDoc(v) {
+    if (v == null || v === '') return '';
+    const n = Number(v);
+    if (isNaN(n)) return '';
+    return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+async function gerarDocx(templatePath, data, nomeArquivo) {
+    const Docx = window.docxtemplater || window.Docxtemplater;
+    if (typeof PizZip === 'undefined' || !Docx || typeof saveAs === 'undefined') {
+        alert('As bibliotecas de geração de documento não carregaram. Verifique a conexão com a internet e recarregue a página (Ctrl+Shift+R).');
+        return;
+    }
+    try {
+        const resp = await fetch(templatePath);
+        if (!resp.ok) throw new Error('modelo não encontrado (' + resp.status + ')');
+        const buf = await resp.arrayBuffer();
+        const zip = new PizZip(buf);
+        const doc = new Docx(zip, { paragraphLoop: true, linebreaks: true });
+        doc.render(data);
+        const blob = doc.getZip().generate({
+            type: 'blob',
+            mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        });
+        saveAs(blob, nomeArquivo);
+    } catch (err) {
+        console.error('[Docx] Erro ao gerar documento:', err);
+        alert('Não foi possível gerar o documento.\n\nSe a mensagem falar em "modelo não encontrado", confirme que a pasta "templates" (com os arquivos .docx) foi enviada ao repositório.\n\nDetalhe técnico: ' + (err.message || err));
+    }
+}
+
+function slugArquivo(nome) {
+    return String(nome || 'fornecedor').normalize('NFD').replace(/[^\x00-\x7F]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'fornecedor';
+}
+
+window.gerarNotaEntrada = async function() {
+    const id = new URLSearchParams(window.location.search).get('id');
+    const cliente = window.GoianitaDB.clientes.getById(id);
+    if (!cliente) { alert('Fornecedor não encontrado.'); return; }
+    const produtos = window.GoianitaDB.produtos.getByCliente(id);
+    if (produtos.length === 0 && !confirm('Este fornecedor não tem produtos cadastrados. Gerar a Nota de Entrada mesmo assim (sem itens)?')) return;
+
+    const itens = produtos.map((p, i) => ({
+        item: i + 1,
+        mercadoria: p.nome || '',
+        condicao: 'USADO',
+        embalagem: p.embalagem || '',
+        estado: p.conservacao || '',
+        prevVenda: p.prevVenda || '',
+        avaliacao: fmtMoedaDoc(p.precoSugerido != null && p.precoSugerido !== 0 ? p.precoSugerido : p.precoVenda),
+        valorVenda: fmtMoedaDoc(p.precoVenda)
+    }));
+
+    await gerarDocx('../templates/nota-entrada.docx', {
+        numero: numeroNota(cliente),
+        fornecedor: cliente.nome || '',
+        cpf: cliente.cpf || '',
+        endereco: cliente.endereco || '',
+        telefone: cliente.telefone || '',
+        contato: cliente.contato || cliente.email || '',
+        observacoes: '',
+        itens: itens
+    }, 'Nota_Entrada_' + slugArquivo(cliente.nome) + '.docx');
+};
+
+window.gerarReciboDevolucao = async function() {
+    const id = new URLSearchParams(window.location.search).get('id');
+    const cliente = window.GoianitaDB.clientes.getById(id);
+    if (!cliente) { alert('Fornecedor não encontrado.'); return; }
+    const hoje = new Date();
+    await gerarDocx('../templates/recibo-devolucao.docx', {
+        numeroNota: numeroNota(cliente),
+        dia: String(hoje.getDate()).padStart(2, '0'),
+        mes: GOIANITA_MESES[hoje.getMonth()],
+        ano: String(hoje.getFullYear()),
+        fornecedor: cliente.nome || ''
+    }, 'Recibo_Devolucao_' + slugArquivo(cliente.nome) + '.docx');
+};
 
 // --- FINANCEIRO GERAL ---
 function renderFinanceiro() {
