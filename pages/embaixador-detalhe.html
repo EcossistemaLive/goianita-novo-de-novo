@@ -123,6 +123,9 @@
                 <p class="page-subtitle" id="emb-subtitulo"></p>
             </div>
             <div style="display:flex;gap:10px;">
+                <button onclick="window.imprimirContratoEmbaixador()" class="btn btn-secondary">
+                    <i class="fa-solid fa-file-contract"></i> Gerar Contrato
+                </button>
                 <button id="btn-registrar-pix" class="btn btn-primary">
                     <i class="fa-solid fa-pix"></i> Registrar Pagamento PIX
                 </button>
@@ -269,8 +272,13 @@
     </div>
 </div>
 
-<script src="../js/db.js"></script>
-<script src="../js/app.js"></script>
+    <!-- Biblioteca para gerar documentos .docx por código -->
+    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <!-- Scripts de dados e controle -->
+    <script src="../js/db.js"></script>
+    <script src="../js/app.js"></script>
 <script>
     const params = new URLSearchParams(location.search);
     const embId = params.get('id');

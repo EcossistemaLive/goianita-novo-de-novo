@@ -2293,6 +2293,78 @@ function imprimirContratoCliente() {
     document.body.removeChild(printArea);
 }
 
+window.imprimirContratoEmbaixador = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    if (!id) return;
+    
+    const embaixador = window.GoianitaDB.embaixadores.getById(id);
+    if (!embaixador) {
+        alert("Embaixador não encontrado.");
+        return;
+    }
+    
+    const printArea = document.createElement('div');
+    printArea.id = 'print-area';
+    
+    let html = `
+        <div class="print-header">
+            <h2 style="text-align: center; margin-bottom: 20px;">CONTRATO DE PARCERIA COMERCIAL E AGENCIAMENTO (EMBAIXADOR)</h2>
+            
+            <div style="border: 2px solid #1a3c6e; border-radius: 7px; padding: 16px 20px; margin-bottom: 20px; background: #f4f8ff;">
+                <h3 style="font-size: 22px; margin-top: 0; margin-bottom: 14px; color: #1a3c6e;">QUALIFICAÇÃO DAS PARTES</h3>
+                <p style="font-size: 20px; text-align: justify; margin-bottom: 10px;"><strong>CONTRATANTE (CASAS GOIANITA):</strong> VIRTUAL DISTRIBUIDORA DE UTILIDADES DOMÉSTICAS LTDA, sociedade limitada, inscrita no CNPJ sob o nº 11.316.256/0001-29, situada na Rua 85, nº 369, Quadra F19, Lote 45, Setor Sul, Goiânia/GO, CEP: 74080-010.</p>
+                <p style="font-size: 20px; text-align: justify; margin-bottom: 10px;"><strong>EMBAIXADOR (PARCEIRO):</strong> ${esc(embaixador.nome)}, inscrito(a) no CPF/CNPJ sob o nº ${esc(embaixador.cpf)}, telefone ${esc(embaixador.telefone)}, e-mail ${esc(embaixador.email || 'N/A')}, residente/sediado(a) em ${esc(embaixador.endereco || 'N/A')}.</p>
+                <p style="font-size: 20px; text-align: justify; margin-bottom: 0;">As partes acima qualificadas celebram o presente contrato de prestação de serviços de indicação e agenciamento (parceria comercial), regido pelas cláusulas a seguir:</p>
+            </div>
+
+            <h3 style="font-size: 22px; margin-top: 20px;">CLÁUSULAS CONTRATUAIS</h3>
+            <div style="font-size: 20px; text-align: justify; line-height: 1.6;">
+                <p><strong>Cláusula 1ª – Do Objeto.</strong> O presente contrato tem por objeto a prestação de serviços de indicação de fornecedores de mercadorias (consignantes) pelo(a) EMBAIXADOR(A) para a CONTRATANTE, através da utilização do código promocional / cupom exclusivo de identificação: <strong>${esc(embaixador.cupom || 'N/A')}</strong>.</p>
+                
+                <p><strong>Cláusula 2ª – Da Remuneração.</strong> A CONTRATANTE pagará ao(à) EMBAIXADOR(A) uma comissão base de <strong>${esc(embaixador.comissaoCaptacaoPadrao || 0)}%</strong> calculada exclusivamente sobre o valor de venda das mercadorias captadas por sua indicação e efetivamente comercializadas pela CONTRATANTE.</p>
+                <p><em>Parágrafo Único.</em> A comissão será devida apenas após a concretização da venda do produto e o respectivo recebimento dos valores pela CONTRATANTE.</p>
+                
+                <p><strong>Cláusula 3ª – Dos Pagamentos.</strong> O repasse das comissões devidas será efetuado periodicamente na modalidade PIX, utilizando a seguinte chave cadastrada:</p>
+                <p style="margin-left: 20px;"><strong>Tipo de Chave:</strong> ${esc(embaixador.chavePixType || 'Não informada')}<br>
+                <strong>Chave PIX:</strong> ${esc(embaixador.chavePix || 'Não informada')}</p>
+                
+                <p><strong>Cláusula 4ª – Da Natureza da Relação.</strong> Este contrato não gera qualquer vínculo empregatício, societário ou de subordinação entre as partes, sendo o(a) EMBAIXADOR(A) inteiramente livre para determinar sua carga horária e métodos de indicação, desde que respeitados os princípios éticos da CONTRATANTE.</p>
+
+                <p><strong>Cláusula 5ª – Da Sigilosidade.</strong> O(A) EMBAIXADOR(A) compromete-se a mantener absoluto sigilo sobre as políticas de comissionamento, margens de lucro, tabelas de preços e dados dos fornecedores a que tiver acesso, sendo expressamente proibido divulgar essas informações aos próprios fornecedores ou a terceiros concorrentes.</p>
+
+                <p><strong>Cláusula 6ª – Da Rescisão.</strong> Este contrato poderá ser rescindido por qualquer das partes, a qualquer momento, mediante comunicação por escrito (podendo ser por meio eletrônico). Os valores pendentes de peças já captadas e vendidas antes da rescisão serão devidamente repassados.</p>
+
+                <p><strong>Cláusula 7ª – Do Foro.</strong> As partes elegem o foro da comarca de Goiânia/GO para dirimir quaisquer dúvidas oriundas deste instrumento.</p>
+            </div>
+        </div>
+        
+        <div class="print-footer" style="margin-top: 80px;">
+            <p style="text-align: center; font-size: 20px;">Por estarem justos e contratados, assinam o presente contrato de parceria comercial.</p>
+            <p style="text-align: center; font-size: 20px; margin-top: 10px;">Goiânia/GO, ${new Date().toLocaleDateString('pt-BR')}</p>
+            <div style="display: flex; justify-content: space-around; margin-top: 60px;">
+                <div style="text-align: center;">
+                    <p>_______________________________________________________</p>
+                    <p><strong>${esc(embaixador.nome)}</strong></p>
+                    <p style="font-size: 18px;">EMBAIXADOR (CPF/CNPJ: ${esc(embaixador.cpf)})</p>
+                </div>
+                <div style="text-align: center;">
+                    <p>_______________________________________________________</p>
+                    <p><strong>Casas Goianita (Virtual Ltda)</strong></p>
+                    <p style="font-size: 18px;">CONTRATANTE</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    printArea.innerHTML = html;
+    document.body.appendChild(printArea);
+    
+    window.print();
+    
+    document.body.removeChild(printArea);
+}
+
 // --- FINANCEIRO GERAL ---
 // --- GERAÇÃO DE DOCUMENTOS .DOCX (Nota de Entrada / Recibo de Devolução) ---
 const GOIANITA_MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
