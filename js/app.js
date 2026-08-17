@@ -1518,12 +1518,15 @@ function renderProdutoNovo() {
     window.toggleEtapa2 = function(isAprovado) {
         const etapa2 = document.getElementById('etapa-2-dados');
         const btnSubmit = document.querySelector('#produto-form button[type="submit"]');
+        const btnDuplicar = document.getElementById('btn-salvar-duplicar');
         if (isAprovado) {
             etapa2.style.display = 'block';
             if (btnSubmit) btnSubmit.disabled = false;
+            if (btnDuplicar) btnDuplicar.disabled = false;
         } else {
             etapa2.style.display = 'none';
             if (btnSubmit) btnSubmit.disabled = true;
+            if (btnDuplicar) btnDuplicar.disabled = true;
         }
     };
     
@@ -1661,6 +1664,115 @@ function renderProdutoNovo() {
                 btnSubmit.disabled = false;
                 btnSubmit.textContent = originalText;
             });
+        });
+    }
+
+    // Handler do botão "Salvar e Duplicar" — bind ÚNICO (mesma guarda do submit)
+    const btnDuplicar = document.getElementById('btn-salvar-duplicar');
+    if (btnDuplicar && !btnDuplicar.dataset.handlerBound) {
+        btnDuplicar.dataset.handlerBound = '1';
+        btnDuplicar.addEventListener('click', async () => {
+            // -- Validações idênticas ao submit normal --
+            const nomeStr = document.getElementById('prod-nome').value.trim();
+            const clienteVal = selectCliente.value;
+            const precoVendaStr = document.getElementById('prod-preco').value;
+
+            if (!clienteVal) { alert('Por favor, selecione um Fornecedor.'); return; }
+            if (!nomeStr)    { alert('Por favor, preencha o Nome Comercial do Produto.'); return; }
+            if (!precoVendaStr) { alert('Por favor, preencha o Preço de Venda.'); return; }
+
+            // -- Monta o objeto do produto (idêntico ao submit) --
+            const precoVenda = parseMoeda(precoVendaStr);
+            const comissao   = parseFloat(document.getElementById('prod-comissao').value) || 50;
+
+            const megaChecklist = [];
+            let classeComercial = 'Em Avaliação';
+            document.querySelectorAll('#etapa-1-checklist .mega-input:checked').forEach(inp => {
+                const cat   = inp.getAttribute('data-category');
+                const label = inp.getAttribute('data-label');
+                megaChecklist.push({ category: cat, label: label });
+                if (cat === '3. Classificação Comercial') classeComercial = label;
+            });
+
+            const embSel       = document.getElementById('prod-embaixador');
+            const embaixadorId = embSel ? (embSel.value || null) : null;
+            const embaixadorObj = embaixadorId && window.GoianitaDB
+                ? window.GoianitaDB.embaixadores.getById(embaixadorId) : null;
+
+            const produto = {
+                nome: nomeStr,
+                descricao: document.getElementById('prod-desc').value,
+                categoria: document.getElementById('prod-cat').value,
+                subcategoria: document.getElementById('prod-subcat').value,
+                marca: document.getElementById('prod-marca').value,
+                ean: document.getElementById('prod-ean').value,
+                conservacao: classeComercial,
+                megaChecklist: megaChecklist,
+                peso: parseFloat(document.getElementById('prod-peso').value) || 0,
+                altura: parseFloat(document.getElementById('prod-alt').value) || 0,
+                largura: parseFloat(document.getElementById('prod-larg').value) || 0,
+                comprimento: parseFloat(document.getElementById('prod-comp').value) || 0,
+                precoSugerido: parseFloat(document.getElementById('prod-preco-sug').value) || 0,
+                precoVenda: precoVenda,
+                comissao: comissao,
+                clienteId: clienteVal,
+                status: document.getElementById('prod-status').value,
+                obsInternas: document.getElementById('prod-obs').value,
+                embaixadorId: embaixadorId || null,
+                cupom: embaixadorObj ? embaixadorObj.cupom : null,
+                comissaoEmbaixador: embaixadorId
+                    ? (parseFloat((document.getElementById('prod-comissao-emb') || {}).value) || (embaixadorObj ? (embaixadorObj.comissaoCaptacaoPadrao || 0) : 0))
+                    : null,
+                valorComissaoEmbaixador: embaixadorId
+                    ? (() => {
+                        const taxa = parseFloat((document.getElementById('prod-comissao-emb') || {}).value) || (embaixadorObj ? (embaixadorObj.comissaoCaptacaoPadrao || 0) : 0);
+                        return (precoVenda * taxa) / 100;
+                    })()
+                    : null
+            };
+
+            // -- Salva --
+            btnDuplicar.disabled = true;
+            btnDuplicar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+
+            try {
+                await window.GoianitaDB.produtos.save(produto);
+
+                // -- Reset parcial: mantém identificação, zera avaliação --
+                // Checklist
+                document.querySelectorAll('#etapa-1-checklist .mega-input').forEach(inp => { inp.checked = false; });
+
+                // Preços e observações
+                document.getElementById('prod-preco').value     = '';
+                document.getElementById('prod-preco-sug').value = '';
+                document.getElementById('prod-obs').value       = '';
+
+                // Box da IA e simulador
+                const boxAprovacao = document.getElementById('recomendacao-aprovacao-box');
+                if (boxAprovacao) boxAprovacao.innerHTML = '';
+                const simForn = document.getElementById('sim-fornecedor');
+                const simEmb  = document.getElementById('sim-embaixador');
+                const simGoianita = document.getElementById('sim-goianita');
+                if (simForn)     simForn.textContent = 'R$ 0,00';
+                if (simEmb)      simEmb.textContent  = 'R$ 0,00';
+                if (simGoianita) simGoianita.textContent = 'R$ 0,00';
+
+                // Restaura botões
+                btnDuplicar.disabled = false;
+                btnDuplicar.innerHTML = '<i class="fa-solid fa-copy"></i> Salvar e Duplicar';
+
+                // Sobe para o checklist para o admin avaliar o próximo item
+                const checklist = document.getElementById('etapa-1-checklist');
+                if (checklist) checklist.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                alert(`✅ Produto salvo com sucesso!\n\nO formulário foi mantido aberto com os dados de identificação.\nRefaça o checklist e a precificação para a próxima peça.`);
+
+            } catch (err) {
+                console.error('[Duplicar] Erro ao salvar:', err);
+                alert('Erro ao salvar produto: ' + err.message);
+                btnDuplicar.disabled = false;
+                btnDuplicar.innerHTML = '<i class="fa-solid fa-copy"></i> Salvar e Duplicar';
+            }
         });
     }
 
