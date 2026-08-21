@@ -591,7 +591,11 @@
                     <div class="form-group full-width" style="grid-column: span 2;" id="simulador-repasse">
                         <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px;">
                             <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px;"><i class="fa-solid fa-calculator"></i> Simulação de Repasses</div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 13px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; font-size: 13px;">
+                                <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px; text-align: center;">
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Imposto (11%)</div>
+                                    <div style="font-weight: 700; color: var(--status-pendente);" id="sim-imposto">R$ 0,00</div>
+                                </div>
                                 <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px; text-align: center;">
                                     <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Repasse Fornecedor</div>
                                     <div style="font-weight: 700; color: var(--status-pago);" id="sim-fornecedor">R$ 0,00</div>
@@ -663,12 +667,20 @@
             grupoEmb.style.display = 'none';
         }
 
-        const valLoja = (preco * comLoja) / 100;
-        const valEmb  = (preco * comEmb) / 100;
-        const valForn = preco - valLoja; // repasse bruto ao fornecedor (comissão da loja absorve o emb)
+        const taxaImposto = window.TAXA_IMPOSTO || 11;
+        const imposto = (preco * taxaImposto) / 100;
+        const liquido = preco - imposto;
+
+        const valLoja = (liquido * comLoja) / 100;
+        const valEmb  = (liquido * comEmb) / 100;
+        const valForn = liquido - valLoja; // repasse líquido ao fornecedor
         const margemGoianita = valLoja - valEmb; // margem líquida da loja
 
-        const fmt = v => 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        const fmt = v => 'R$ ' + Math.max(0, v).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        
+        const simImpostoEl = document.getElementById('sim-imposto');
+        if (simImpostoEl) simImpostoEl.textContent = fmt(imposto);
+        
         document.getElementById('sim-fornecedor').textContent  = fmt(valForn);
         document.getElementById('sim-embaixador').textContent  = fmt(valEmb);
         document.getElementById('sim-goianita').textContent    = fmt(margemGoianita);

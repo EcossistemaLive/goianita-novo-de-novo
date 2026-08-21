@@ -1216,7 +1216,9 @@ function renderClienteDetalhe() {
         };
 
         prodTable.innerHTML = produtos.map(p => {
-            const valorCliente = p.precoVenda - (p.precoVenda * p.comissao / 100);
+            const taxaImp = window.TAXA_IMPOSTO || 11;
+            const liq = p.precoVenda - (p.precoVenda * taxaImp / 100);
+            const valorCliente = liq - (liq * p.comissao / 100);
             const isApproved = p.status !== 'Recusado/Devolvido'; // ou algo do tipo
             return `
                 <tr>
@@ -1271,7 +1273,9 @@ function renderProdutosList() {
         list = ordenarPorCadastro(list);
         renderTabela(tableBody, list.map(p => {
             const cliente = window.GoianitaDB.clientes.getById(p.clienteId) || { nome: 'Desconhecido' };
-            const valorCliente = p.precoVenda - (p.precoVenda * p.comissao / 100);
+            const taxaImp = window.TAXA_IMPOSTO || 11;
+            const liq = p.precoVenda - (p.precoVenda * taxaImp / 100);
+            const valorCliente = liq - (liq * p.comissao / 100);
             return `
                 <tr>
                     <td><strong>${esc(p.sku)}</strong></td>
@@ -1645,7 +1649,9 @@ function renderProdutoNovo() {
                 valorComissaoEmbaixador: embaixadorId
                     ? (() => {
                         const taxa = parseFloat((document.getElementById('prod-comissao-emb') || {}).value) || (embaixadorObj ? (embaixadorObj.comissaoCaptacaoPadrao || 0) : 0);
-                        return (precoVenda * taxa) / 100;
+                        const taxaImp = window.TAXA_IMPOSTO || 11;
+                        const liq = precoVenda - (precoVenda * taxaImp / 100);
+                        return (liq * taxa) / 100;
                     })()
                     : null
             };
@@ -1726,7 +1732,9 @@ function renderProdutoNovo() {
                 valorComissaoEmbaixador: embaixadorId
                     ? (() => {
                         const taxa = parseFloat((document.getElementById('prod-comissao-emb') || {}).value) || (embaixadorObj ? (embaixadorObj.comissaoCaptacaoPadrao || 0) : 0);
-                        return (precoVenda * taxa) / 100;
+                        const taxaImp = window.TAXA_IMPOSTO || 11;
+                        const liq = precoVenda - (precoVenda * taxaImp / 100);
+                        return (liq * taxa) / 100;
                     })()
                     : null
             };
@@ -1879,7 +1887,9 @@ function renderProdutoDetalhe() {
     if (!produto) return;
     
     const cliente = window.GoianitaDB.clientes.getById(produto.clienteId) || { nome: 'Desconhecido' };
-    const valorCliente = produto.precoVenda - (produto.precoVenda * produto.comissao / 100);
+    const taxaImp = window.TAXA_IMPOSTO || 11;
+    const liq = produto.precoVenda - (produto.precoVenda * taxaImp / 100);
+    const valorCliente = liq - (liq * produto.comissao / 100);
 
     // Preenche dados da tela
     document.getElementById('prod-detalhe-sku').textContent = produto.sku;
@@ -1889,6 +1899,10 @@ function renderProdutoDetalhe() {
     document.getElementById('prod-detalhe-conservacao').textContent = produto.conservacao;
     document.getElementById('prod-detalhe-dimensoes').textContent = `${produto.altura}x${produto.largura}x${produto.comprimento} cm | ${produto.peso} g`;
     document.getElementById('prod-detalhe-preco-venda').textContent = formatCurrency(produto.precoVenda);
+    
+    const impostoEl = document.getElementById('prod-detalhe-imposto');
+    if(impostoEl) impostoEl.textContent = formatCurrency(produto.precoVenda * taxaImp / 100);
+    
     document.getElementById('prod-detalhe-valor-cliente').textContent = formatCurrency(valorCliente);
     document.getElementById('prod-detalhe-comissao').textContent = `${produto.comissao}%`;
     document.getElementById('prod-detalhe-status').innerHTML = getStatusBadge(produto.status);
@@ -2366,9 +2380,12 @@ function imprimirContratoCliente() {
             checklistHtml = '<p style="font-size: 16px; font-style: italic; color: #777;">Checklist não preenchido.</p>';
         }
 
+            const taxaImp = window.TAXA_IMPOSTO || 11;
+            const liq = p.precoVenda - (p.precoVenda * taxaImp / 100);
+            const repasse = liq - (liq * p.comissao / 100);
         html += `
             <div style="margin-bottom: 20px; padding: 14px 16px; border: 2px solid #1a3c6e; border-radius: 7px;">
-                <h4 style="margin: 0 0 12px 0; font-size: 20px; color: #1a3c6e;">[${esc(p.sku)}] ${esc(p.nome)} &mdash; Valor Líquido de Repasse: R$ ${(p.precoVenda * (1 - p.comissao/100)).toFixed(2)}</h4>
+                <h4 style="margin: 0 0 12px 0; font-size: 20px; color: #1a3c6e;">[${esc(p.sku)}] ${esc(p.nome)} &mdash; Valor Líquido de Repasse: R$ ${repasse.toFixed(2)}</h4>
                 <div style="column-count: 2; column-gap: 24px;">
                     ${checklistHtml}
                 </div>

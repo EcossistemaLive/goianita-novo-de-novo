@@ -62,6 +62,12 @@ if (typeof firebase !== 'undefined') {
 const GOIANITA_SIMULATION_MODE = false;
 
 /**
+ * TAXA DE IMPOSTO SOBRE VENDA
+ * Utilizada para deduzir impostos do preço bruto antes da partilha de comissões (fornecedor, loja, embaixador).
+ */
+window.TAXA_IMPOSTO = 11;
+
+/**
  * Converte um valor monetário em texto (pt-BR) para número.
  * Trata separador de milhar (ponto) e decimal (vírgula) corretamente.
  * Exemplos: "R$ 1.399,00" -> 1399.00 | "399,90" -> 399.9 | "399.90" -> 399.9
@@ -1176,7 +1182,10 @@ const db = {
             const totalFaturado = produtosVendidos.reduce((acc, p) => acc + (p.precoVenda || 0), 0);
             const comissaoTotalGerada = produtosVendidos.reduce((acc, p) => {
                 const taxa = p.comissaoEmbaixador != null ? p.comissaoEmbaixador : (emb.comissaoCaptacaoPadrao || 0);
-                return acc + ((p.precoVenda || 0) * taxa / 100);
+                const precoBase = p.precoVenda || 0;
+                const imposto = (precoBase * window.TAXA_IMPOSTO) / 100;
+                const liquido = precoBase - imposto;
+                return acc + (liquido * taxa / 100);
             }, 0);
 
             // Pagamentos já registrados para este embaixador
@@ -1211,10 +1220,14 @@ const db = {
             const totalComissaoGoianita = produtos
                 .filter(p => p.status === 'Vendido' || p.status === 'Pago')
                 .reduce((acc, p) => {
-                    const comissaoLoja = ((p.precoVenda || 0) * (p.comissao || 0)) / 100;
+                    const precoBase = p.precoVenda || 0;
+                    const imposto = (precoBase * window.TAXA_IMPOSTO) / 100;
+                    const liquido = precoBase - imposto;
+                    
+                    const comissaoLoja = (liquido * (p.comissao || 0)) / 100;
                     // Se há comissão de embaixador, ela sai da margem da loja
                     const comissaoEmb = p.comissaoEmbaixador != null
-                        ? ((p.precoVenda || 0) * p.comissaoEmbaixador / 100)
+                        ? (liquido * p.comissaoEmbaixador / 100)
                         : 0;
                     return acc + comissaoLoja - comissaoEmb;
                 }, 0);
@@ -1223,9 +1236,15 @@ const db = {
                 .filter(p => !p.embaixadorId)
                 .reduce((acc, p) => acc + (p.valor || 0), 0);
 
-            const saldoPagarFornecedores = (totalVendas - produtos
+            const saldoPagarFornecedores = (produtos
                 .filter(p => p.status === 'Vendido' || p.status === 'Pago')
-                .reduce((acc, p) => acc + ((p.precoVenda || 0) * (p.comissao || 0)) / 100, 0)) - totalPagoFornecedores;
+                .reduce((acc, p) => {
+                    const precoBase = p.precoVenda || 0;
+                    const imposto = (precoBase * window.TAXA_IMPOSTO) / 100;
+                    const liquido = precoBase - imposto;
+                    const valForn = liquido - ((liquido * (p.comissao || 0)) / 100);
+                    return acc + valForn;
+                }, 0)) - totalPagoFornecedores;
 
             // Estatísticas de embaixadores
             const embAtivos = embaixadores.filter(e => e.ativo !== false).length;
@@ -1234,7 +1253,10 @@ const db = {
                 .reduce((acc, p) => {
                     const emb = db.embaixadores.getById(p.embaixadorId);
                     const taxa = p.comissaoEmbaixador != null ? p.comissaoEmbaixador : (emb ? (emb.comissaoCaptacaoPadrao || 0) : 0);
-                    return acc + ((p.precoVenda || 0) * taxa / 100);
+                    const precoBase = p.precoVenda || 0;
+                    const imposto = (precoBase * window.TAXA_IMPOSTO) / 100;
+                    const liquido = precoBase - imposto;
+                    return acc + (liquido * taxa / 100);
                 }, 0);
             const totalPagoEmbaixadores = pagamentos
                 .filter(p => !!p.embaixadorId)
