@@ -2530,8 +2530,6 @@ async function baixarDocx(doc, nomeArquivo) {
 }
 
 window.gerarNotaEntrada = async function() {
-    const D = window.docx;
-    if (!D) { alert('A biblioteca de documento não carregou. Recarregue a página (Ctrl+Shift+R).'); return; }
     const id = new URLSearchParams(window.location.search).get('id');
     const cliente = window.GoianitaDB.clientes.getById(id);
     if (!cliente) { alert('Fornecedor não encontrado.'); return; }
@@ -2546,58 +2544,97 @@ window.gerarNotaEntrada = async function() {
         if (!confirm('Este fornecedor não tem produtos cadastrados. Gerar a Nota mesmo assim (sem itens)?')) return;
     }
 
-    const { Document, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, TableLayoutType, PageOrientation } = D;
-    const P = (children, opts) => new Paragraph(Object.assign({ children }, opts || {}));
-    const T = (text, opts) => new TextRun(Object.assign({ text: String(text == null ? '' : text) }, opts || {}));
-    const cel = (txt, o) => { o = o || {}; return new TableCell({ width: { size: o.w || 1500, type: WidthType.DXA }, margins: { top: 40, bottom: 40, left: 60, right: 60 }, children: [ new Paragraph({ alignment: o.align || AlignmentType.LEFT, children: [ new TextRun({ text: String(txt == null ? '' : txt), bold: !!o.bold, size: o.size || 16 }) ] }) ] }); };
-
-    // Larguras fixas de cada coluna (em twips). Sem isso, o Word encolhe as colunas e
-    // quebra o texto letra por letra. A soma (~13958) cabe na página A4 em paisagem.
-    const colW = [600, 3200, 1200, 1500, 2200, 1400, 1900, 1958];
-    const cols = ['Item', 'Mercadoria', 'Condição', 'Embalagem', 'Estado', 'Prev. Venda', 'Avaliação (R$)', 'Valor Venda (R$)'];
-    const rows = [ new TableRow({ tableHeader: true, children: cols.map((c, idx) => cel(c, { bold: true, align: AlignmentType.CENTER, w: colW[idx] })) }) ];
-    produtos.forEach((p, i) => {
-        rows.push(new TableRow({ children: [
-            cel(i + 1, { align: AlignmentType.CENTER, w: colW[0] }),
-            cel(p.nome || '', { w: colW[1] }),
-            cel('USADO', { align: AlignmentType.CENTER, w: colW[2] }),
-            cel(p.embalagem || '', { w: colW[3] }),
-            cel(p.conservacao || '', { w: colW[4] }),
-            cel(p.prevVenda || '', { align: AlignmentType.CENTER, w: colW[5] }),
-            cel(fmtMoedaDoc(p.precoSugerido != null && p.precoSugerido !== 0 ? p.precoSugerido : p.precoVenda), { align: AlignmentType.RIGHT, w: colW[6] }),
-            cel(fmtMoedaDoc(p.precoVenda), { align: AlignmentType.RIGHT, w: colW[7] })
-        ] }));
-    });
+    // Cria um contêiner invisível apenas para a impressão
+    const printArea = document.createElement('div');
+    printArea.id = 'print-area';
 
     const contato = cliente.contato || cliente.email || '';
-    const doc = new Document({ sections: [{
-        properties: { page: {
-            size: { orientation: PageOrientation.LANDSCAPE, width: 16838, height: 11906 },
-            margin: { top: 1000, bottom: 1000, left: 1000, right: 1000 }
-        } },
-        children: [
-        P([ T('CASA GOIANITA', { bold: true, size: 28 }) ], { alignment: AlignmentType.CENTER }),
-        P([ T('NOTA DE ENTRADA DE MERCADORIAS SEMI-NOVAS P/ VENDA', { bold: true, size: 24 }) ], { alignment: AlignmentType.CENTER }),
-        P([ T('Documento de Recebimento e Avaliação de Consignação — Nº: ' + numeroNota(cliente), { italics: true, size: 18 }) ], { alignment: AlignmentType.CENTER }),
-        P([ T('') ]),
-        P([ T('Fornecedor: ', { bold: true }), T(cliente.nome || '') ]),
-        P([ T('CPF/CNPJ: ', { bold: true }), T(cliente.cpf || '') ]),
-        P([ T('Endereço: ', { bold: true }), T(cliente.endereco || '') ]),
-        P([ T('Telefone: ', { bold: true }), T(cliente.telefone || ''), T('     Contato: ', { bold: true }), T(contato) ]),
-        P([ T('Observações: ', { bold: true }), T('') ]),
-        P([ T('') ]),
-        new Table({ columnWidths: colW, layout: TableLayoutType.FIXED, width: { size: 13958, type: WidthType.DXA }, rows: rows }),
-        P([ T('') ]),
-        P([ T('Prazo de Avaliação: 7 dias', { bold: true }) ]),
-        P([ T('') ]),
-        P([ T('RECIBO E TERMOS DE CONSIGNAÇÃO', { bold: true }) ]),
-        P([ T('Recebemos do cliente acima caracterizado as mercadorias relacionadas para revenda. O cliente terá o direito de aprovar/reprovar a avaliação. As despesas provenientes da venda correrão por conta da Casa Goianita, inclusive os impostos. O valor da parte do fornecedor será pago após recebimento de cartão ou prazo concedido aos adquirentes. A responsabilidade da venda é toda da Casa Goianita. Quando a venda for à vista, o pagamento será feito em até 3 dias via PIX ao fornecedor.', { size: 18 }) ]),
-        P([ T('') ]), P([ T('') ]),
-        P([ T('_________________________________________') ], { alignment: AlignmentType.CENTER }),
-        P([ T('Assinatura do Fornecedor / Proprietário') ], { alignment: AlignmentType.CENTER })
-    ] }] });
+    
+    let tbodyHtml = '';
+    produtos.forEach((p, i) => {
+        const precoSug = p.precoSugerido != null && p.precoSugerido !== 0 ? p.precoSugerido : p.precoVenda;
+        tbodyHtml += `
+            <tr>
+                <td style="text-align: center;">${i + 1}</td>
+                <td style="text-align: center; font-weight: bold;">${p.sku || '-'}</td>
+                <td>${p.nome || ''}</td>
+                <td style="text-align: center;">USADO</td>
+                <td>${p.embalagem || ''}</td>
+                <td>${p.conservacao || ''}</td>
+                <td style="text-align: center;">${p.prevVenda || ''}</td>
+                <td style="text-align: right;">${formatCurrency(precoSug)}</td>
+                <td style="text-align: right;">${formatCurrency(p.precoVenda)}</td>
+            </tr>
+        `;
+    });
 
-    await baixarDocx(doc, 'Nota_Entrada_' + slugArquivo(cliente.nome) + '.docx');
+    let html = `
+        <style>
+            @page { size: landscape; margin: 10mm; }
+            #print-area { font-family: sans-serif; font-size: 14px; line-height: 1.3; color: #000; }
+            .pe-title { text-align: center; margin: 0 0 5px 0; font-size: 24px; font-weight: bold; }
+            .pe-subtitle { text-align: center; margin: 0 0 15px 0; font-size: 18px; font-weight: bold; }
+            .pe-doc-num { text-align: center; font-style: italic; margin-bottom: 20px; font-size: 16px; }
+            .pe-info { margin-bottom: 20px; font-size: 16px; }
+            .pe-info p { margin: 5px 0; }
+            table.pe-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+            table.pe-table th, table.pe-table td { border: 1px solid #000; padding: 6px; }
+            table.pe-table th { background-color: #f0f0f0; text-align: center; font-weight: bold; }
+            .pe-footer { margin-top: 30px; font-size: 15px; }
+            .pe-footer h4 { font-size: 16px; margin: 0 0 10px 0; font-weight: bold; }
+            .pe-footer p { margin-bottom: 30px; text-align: justify; }
+            .pe-signature { text-align: center; margin-top: 50px; }
+        </style>
+        <div class="pe-title">CASA GOIANITA</div>
+        <div class="pe-subtitle">NOTA DE ENTRADA DE MERCADORIAS SEMI-NOVAS P/ VENDA</div>
+        <div class="pe-doc-num">Documento de Recebimento e Avaliação de Consignação — Nº: ${numeroNota(cliente)}</div>
+        
+        <div class="pe-info">
+            <p><strong>Fornecedor:</strong> ${cliente.nome || ''}</p>
+            <p><strong>CPF/CNPJ:</strong> ${cliente.cpf || ''}</p>
+            <p><strong>Endereço:</strong> ${cliente.endereco || ''}</p>
+            <p><strong>Telefone:</strong> ${cliente.telefone || ''} &nbsp;&nbsp;&nbsp;&nbsp; <strong>Contato:</strong> ${contato}</p>
+            <p><strong>Observações:</strong> </p>
+        </div>
+
+        <table class="pe-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">Item</th>
+                    <th style="width: 90px;">SKU</th>
+                    <th>Mercadoria</th>
+                    <th style="width: 80px;">Condição</th>
+                    <th style="width: 100px;">Embalagem</th>
+                    <th style="width: 120px;">Estado</th>
+                    <th style="width: 100px;">Prev. Venda</th>
+                    <th style="width: 110px;">Avaliação</th>
+                    <th style="width: 110px;">Valor Venda</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tbodyHtml}
+            </tbody>
+        </table>
+
+        <div class="pe-footer">
+            <p><strong>Prazo de Avaliação:</strong> 7 dias</p>
+            <h4>RECIBO E TERMOS DE CONSIGNAÇÃO</h4>
+            <p>Recebemos do cliente acima caracterizado as mercadorias relacionadas para revenda. O cliente terá o direito de aprovar/reprovar a avaliação. As despesas provenientes da venda correrão por conta da Casa Goianita, inclusive os impostos. O valor da parte do fornecedor será pago após recebimento de cartão ou prazo concedido aos adquirentes. A responsabilidade da venda é toda da Casa Goianita. Quando a venda for à vista, o pagamento será feito em até 3 dias via PIX ao fornecedor.</p>
+        </div>
+
+        <div class="pe-signature">
+            <p>_________________________________________</p>
+            <p>Assinatura do Fornecedor / Proprietário</p>
+        </div>
+    `;
+
+    printArea.innerHTML = html;
+    document.body.appendChild(printArea);
+
+    setTimeout(() => {
+        window.print();
+        document.body.removeChild(printArea);
+    }, 200);
 };
 
 window.gerarReciboDevolucao = async function() {
