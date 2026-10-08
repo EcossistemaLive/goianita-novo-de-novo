@@ -1310,9 +1310,18 @@ function renderProdutosList() {
     
     // Busca e Filtros
     const searchInput = document.getElementById('search-produtos');
+    const filterFornecedor = document.getElementById('filter-fornecedor');
     const filterStatus = document.getElementById('filter-status');
     const filterCategoria = document.getElementById('filter-categoria');
     
+    // Popula opções de fornecedores ordenados alfabeticamente
+    if (filterFornecedor) {
+        const clientes = (window.GoianitaDB.clientes.getAll() || []).slice();
+        clientes.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+        filterFornecedor.innerHTML = '<option value="">Todos os Fornecedores</option>' +
+            clientes.map(c => `<option value="${esc(c.id)}">${esc(c.nome)}</option>`).join('');
+    }
+
     function applyFilters() {
         let list = produtos;
         if (searchInput && searchInput.value) {
@@ -1320,6 +1329,9 @@ function renderProdutosList() {
             // Guardas contra campo ausente: um produto sem SKU ou sem nome derrubava a busca.
             list = list.filter(p => String(p.nome || '').toLowerCase().includes(val) ||
                                     String(p.sku || '').toLowerCase().includes(val));
+        }
+        if (filterFornecedor && filterFornecedor.value) {
+            list = list.filter(p => p.clienteId === filterFornecedor.value);
         }
         if (filterStatus && filterStatus.value) {
             list = list.filter(p => p.status === filterStatus.value);
@@ -1330,7 +1342,16 @@ function renderProdutosList() {
         drawTable(list);
     }
     
+    // Suporte a parâmetro na URL: produtos.html?clienteId=xxx
+    const urlParams = new URLSearchParams(window.location.search);
+    const clienteIdUrl = urlParams.get('clienteId');
+    if (clienteIdUrl && filterFornecedor) {
+        filterFornecedor.value = clienteIdUrl;
+        applyFilters();
+    }
+
     if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (filterFornecedor) filterFornecedor.addEventListener('change', applyFilters);
     if (filterStatus) filterStatus.addEventListener('change', applyFilters);
     if (filterCategoria) filterCategoria.addEventListener('change', applyFilters);
 }
