@@ -1117,38 +1117,51 @@ function renderClienteDetalhe() {
     document.getElementById('cli-total-vendas').textContent = formatCurrency(financeiro.totalApostado);
     document.getElementById('cli-total-pago').textContent = formatCurrency(financeiro.totalPago);
 
-    // Habilita ou desabilita botão de pagamento se não tiver saldo disponível
+    // Habilita ou desabilita botão de pagamento se não tiver saldo a pagar
     const btnPagar = document.getElementById('btn-pagar-cliente');
     if (btnPagar && role === 'admin') {
-        btnPagar.disabled = financeiro.saldoDisponivel <= 0;
+        const saldoMaximoPagar = Math.max(financeiro.saldoPendente || 0, financeiro.saldoDisponivel || 0);
+        btnPagar.disabled = saldoMaximoPagar <= 0;
         if (!btnPagar.dataset.handlerBound) {
-        btnPagar.dataset.handlerBound = '1';
-        btnPagar.addEventListener('click', () => {
-            const valorPagar = prompt(`Confirmar pagamento via PIX para este cliente?\nValor Disponível (Liberado): ${formatCurrency(financeiro.saldoDisponivel)}\nSaldo Bloqueado (Vendas < 30 dias): ${formatCurrency(financeiro.saldoBloqueado)}\n\nDigite o valor para transferir:`, financeiro.saldoDisponivel.toFixed(2));
-            if (valorPagar) {
-                const valor = parseFloat(valorPagar);
-                if (valor > 0 && valor <= financeiro.saldoDisponivel) {
-                    const comp = prompt("Insira o código de autenticação do PIX / comprovante da transação bancária:");
-                    if (comp) {
-                        btnPagar.disabled = true;
-                        window.GoianitaDB.pagamentos.save({
-                            clienteId: id,
-                            valor: valor,
-                            chavePix: cliente.chavePix,
-                            comprovante: comp
-                        }).then(() => {
-                            alert("Pagamento registrado com sucesso!");
-                            window.location.reload();
-                        }).catch(err => {
-                            alert("Erro ao registrar pagamento: " + err.message);
-                            btnPagar.disabled = false;
-                        });
+            btnPagar.dataset.handlerBound = '1';
+            btnPagar.addEventListener('click', () => {
+                const saldoSugerido = (financeiro.saldoDisponivel > 0 ? financeiro.saldoDisponivel : financeiro.saldoPendente) || 0;
+                const msg = `Confirmar pagamento via PIX para este cliente?\n\n` +
+                            `• Saldo Total Pendente: ${formatCurrency(financeiro.saldoPendente)}\n` +
+                            `• Saldo Liberado (>30 dias): ${formatCurrency(financeiro.saldoDisponivel)}\n` +
+                            `• Saldo Recente (<30 dias): ${formatCurrency(financeiro.saldoBloqueado)}\n\n` +
+                            `Digite o valor a transferir:`;
+                
+                const valorPagar = prompt(msg, saldoSugerido.toFixed(2));
+                if (valorPagar !== null && valorPagar.trim() !== '') {
+                    const parseFn = window.parseMoedaBR || parseFloat;
+                    let valor = typeof parseFn === 'function' ? parseFn(valorPagar) : parseFloat(String(valorPagar).replace(',', '.'));
+                    
+                    valor = Math.round(valor * 100) / 100;
+                    const teto = Math.round((saldoMaximoPagar + 0.05) * 100) / 100;
+
+                    if (!isNaN(valor) && valor > 0 && valor <= teto) {
+                        const comp = prompt("Insira o código de autenticação do PIX / comprovante da transação bancária:");
+                        if (comp) {
+                            btnPagar.disabled = true;
+                            window.GoianitaDB.pagamentos.save({
+                                clienteId: id,
+                                valor: valor,
+                                chavePix: cliente.chavePix,
+                                comprovante: comp
+                            }).then(() => {
+                                alert("Pagamento registrado com sucesso!");
+                                window.location.reload();
+                            }).catch(err => {
+                                alert("Erro ao registrar pagamento: " + err.message);
+                                btnPagar.disabled = false;
+                            });
+                        }
+                    } else {
+                        alert(`Valor inválido.\nO valor deve ser maior que R$ 0,00 e até o limite pendente (${formatCurrency(saldoMaximoPagar)}).`);
                     }
-                } else {
-                    alert("Valor inválido.");
                 }
-            }
-        });
+            });
         }
     }
 
