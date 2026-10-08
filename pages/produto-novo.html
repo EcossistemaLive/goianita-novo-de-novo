@@ -593,8 +593,9 @@
                             <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px;"><i class="fa-solid fa-calculator"></i> Simulação de Repasses</div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; font-size: 13px;">
                                 <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px; text-align: center;">
-                                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Imposto (11%)</div>
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Imposto (11% Total)</div>
                                     <div style="font-weight: 700; color: var(--status-pendente);" id="sim-imposto">R$ 0,00</div>
+                                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px;" id="sim-imposto-rateio">(50% loja / 50% cliente)</div>
                                 </div>
                                 <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px; text-align: center;">
                                     <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Repasse Fornecedor</div>
@@ -680,6 +681,12 @@
         
         const simImpostoEl = document.getElementById('sim-imposto');
         if (simImpostoEl) simImpostoEl.textContent = fmt(imposto);
+        
+        const simImpostoRateioEl = document.getElementById('sim-imposto-rateio');
+        if (simImpostoRateioEl) {
+            const percForn = Math.max(0, 100 - comLoja);
+            simImpostoRateioEl.textContent = `(${comLoja}% loja / ${percForn}% cliente)`;
+        }
         
         document.getElementById('sim-fornecedor').textContent  = fmt(valForn);
         document.getElementById('sim-embaixador').textContent  = fmt(valEmb);

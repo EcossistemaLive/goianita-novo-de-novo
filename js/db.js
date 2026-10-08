@@ -1132,9 +1132,12 @@ const db = {
             let totalDisponivel = 0;
             let saldoBloqueado = 0;
 
+            const taxaImp = window.TAXA_IMPOSTO || 11;
             produtosVendidos.forEach(p => {
-                const comissaoLojista = (p.precoVenda * p.comissao) / 100;
-                const valorCliente = p.precoVenda - comissaoLojista;
+                const precoBase = p.precoVenda || 0;
+                const imposto = (precoBase * taxaImp) / 100;
+                const liq = precoBase - imposto;
+                const valorCliente = liq - ((liq * (p.comissao || 0)) / 100);
 
                 if (p.status === 'Pago') {
                     totalDisponivel += valorCliente;

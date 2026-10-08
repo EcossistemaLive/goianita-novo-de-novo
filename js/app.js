@@ -1888,8 +1888,13 @@ function renderProdutoDetalhe() {
     
     const cliente = window.GoianitaDB.clientes.getById(produto.clienteId) || { nome: 'Desconhecido' };
     const taxaImp = window.TAXA_IMPOSTO || 11;
-    const liq = produto.precoVenda - (produto.precoVenda * taxaImp / 100);
-    const valorCliente = liq - (liq * produto.comissao / 100);
+    const precoVenda = produto.precoVenda || 0;
+    const impostoTotal = (precoVenda * taxaImp) / 100;
+    const liq = precoVenda - impostoTotal;
+    const percentLoja = produto.comissao != null ? produto.comissao : 50;
+    const valorLoja = (liq * percentLoja) / 100;
+    const valorCliente = liq - valorLoja;
+    const cotaImpostoCliente = impostoTotal * (1 - (percentLoja / 100));
 
     // Preenche dados da tela
     document.getElementById('prod-detalhe-sku').textContent = produto.sku;
@@ -1898,13 +1903,19 @@ function renderProdutoDetalhe() {
     document.getElementById('prod-detalhe-cliente').innerHTML = `<a href="cliente-detalhe.html?id=${encodeURIComponent(cliente.id)}">${esc(cliente.nome)}</a>`;
     document.getElementById('prod-detalhe-conservacao').textContent = produto.conservacao;
     document.getElementById('prod-detalhe-dimensoes').textContent = `${produto.altura}x${produto.largura}x${produto.comprimento} cm | ${produto.peso} g`;
-    document.getElementById('prod-detalhe-preco-venda').textContent = formatCurrency(produto.precoVenda);
+    document.getElementById('prod-detalhe-preco-venda').textContent = formatCurrency(precoVenda);
     
     const impostoEl = document.getElementById('prod-detalhe-imposto');
-    if(impostoEl) impostoEl.textContent = formatCurrency(produto.precoVenda * taxaImp / 100);
+    if (impostoEl) impostoEl.textContent = formatCurrency(impostoTotal);
+
+    const impostoCliEl = document.getElementById('prod-detalhe-imposto-cliente');
+    if (impostoCliEl) impostoCliEl.textContent = formatCurrency(cotaImpostoCliente);
     
+    document.getElementById('prod-detalhe-comissao').textContent = `${percentLoja}%`;
+    const valorLojaEl = document.getElementById('prod-detalhe-valor-loja');
+    if (valorLojaEl) valorLojaEl.textContent = `Retenção líquida: ${formatCurrency(valorLoja)}`;
+
     document.getElementById('prod-detalhe-valor-cliente').textContent = formatCurrency(valorCliente);
-    document.getElementById('prod-detalhe-comissao').textContent = `${produto.comissao}%`;
     document.getElementById('prod-detalhe-status').innerHTML = getStatusBadge(produto.status);
     document.getElementById('prod-detalhe-entrada').textContent = formatDate(produto.dataEntrada);
     document.getElementById('prod-detalhe-limite').textContent = formatDate(produto.dataLimite);
@@ -2619,7 +2630,7 @@ window.gerarNotaEntrada = async function() {
         <div class="pe-footer">
             <p><strong>Prazo de Avaliação:</strong> 7 dias</p>
             <h4>RECIBO E TERMOS DE CONSIGNAÇÃO</h4>
-            <p>Recebemos do cliente acima caracterizado as mercadorias relacionadas para revenda. O cliente terá o direito de aprovar/reprovar a avaliação. As despesas provenientes da venda correrão por conta da Casa Goianita, inclusive os impostos. O valor da parte do fornecedor será pago após recebimento de cartão ou prazo concedido aos adquirentes. A responsabilidade da venda é toda da Casa Goianita. Quando a venda for à vista, o pagamento será feito em até 3 dias via PIX ao fornecedor.</p>
+            <p>Recebemos do cliente acima caracterizado as mercadorias relacionadas para revenda. O cliente terá o direito de aprovar/reprovar a avaliação. As despesas operacionais da venda correrão por conta da Casa Goianita, sendo os tributos incidentes (11% do Simples Nacional) rateados proporcionalmente entre as partes sobre o preço final de venda. O valor da parte do fornecedor será pago após recebimento de cartão ou prazo concedido aos adquirentes. A responsabilidade da venda é toda da Casa Goianita. Quando a venda for à vista, o pagamento será feito em até 3 dias via PIX ao fornecedor.</p>
         </div>
 
         <div class="pe-signature">
