@@ -124,14 +124,16 @@ window.GoianitaSessaoPronta = GoianitaSessaoPronta;
  * e Recibo de Devolução. Nada disso deve aparecer para ele — dos documentos, apenas o
  * CONTRATO. Esconder aqui, num lugar só, evita depender de cada página lembrar da regra.
  */
-const GOIANITA_ACOES_SO_ADMIN = /gerarNotaEntrada|gerarReciboDevolucao|imprimirAvaliacoesCliente|imprimirLaudoProduto|editarProdutoAtual|excluirProdutoAtual|salvarEdicaoProduto|abrirEditarProduto|definirCodigoFornecedor|gerarCodigosFornecedores|restaurarFornecedorExcluido|goianitaForcarSync|zerarTudo|media-upload-input/i;
+const GOIANITA_ACOES_SO_ADMIN = /gerarNotaEntrada|gerarReciboDevolucao|imprimirAvaliacoesCliente|imprimirLaudoProduto|editarProdutoAtual|excluirProdutoAtual|salvarEdicaoProduto|abrirEditarProduto|abrirEditarCliente|salvarEdicaoCliente|fecharEditarCliente|definirCodigoFornecedor|gerarCodigosFornecedores|restaurarFornecedorExcluido|goianitaForcarSync|zerarTudo|media-upload-input/i;
 
 const GOIANITA_IDS_SO_ADMIN = [
     'btn-pagar-cliente',            // efetuar repasse PIX
     'btn-excluir-cliente',
+    'btn-editar-cliente',
     'btn-novo-cliente-trigger',
     'btn-import-clientes-trigger',
     'btn-salvar-edicao-produto',
+    'btn-salvar-edicao-cliente',
     'btn-adicionar-midia'
 ];
 
@@ -1439,6 +1441,87 @@ window.salvarEdicaoProduto = async function() {
     } catch (err) {
         alert('Erro ao salvar: ' + err.message);
         if (btn) { btn.disabled = false; btn.textContent = original; }
+    }
+};
+
+// --- EDITAR CLIENTE (Ficha do Fornecedor) ---
+window.abrirEditarCliente = function() {
+    const id = new URLSearchParams(window.location.search).get('id');
+    const cliente = window.GoianitaDB.clientes.getById(id);
+    if (!cliente) { alert('Fornecedor não encontrado.'); return; }
+
+    const modal = document.getElementById('modal-editar-cliente');
+    if (!modal) { alert('Modal de edição não encontrado nesta página.'); return; }
+
+    document.getElementById('edit-cli-id').value = cliente.id;
+    document.getElementById('edit-cli-nome').value = cliente.nome || '';
+    document.getElementById('edit-cli-cpf').value = cliente.cpf || 'Não informado';
+    document.getElementById('edit-cli-codigo').value = cliente.codigoFornecedor || 'Pendente';
+    document.getElementById('edit-cli-tel').value = cliente.telefone || '';
+    document.getElementById('edit-cli-email').value = cliente.email || '';
+    document.getElementById('edit-cli-endereco').value = cliente.endereco || '';
+    document.getElementById('edit-cli-contato').value = cliente.contato || '';
+    document.getElementById('edit-cli-comissao').value = (cliente.comissaoPadrao != null) ? cliente.comissaoPadrao : 50;
+    document.getElementById('edit-cli-pix-type').value = cliente.chavePixType || 'CPF';
+    document.getElementById('edit-cli-pix').value = cliente.chavePix || '';
+
+    modal.style.display = 'flex';
+};
+
+window.fecharEditarCliente = function() {
+    const modal = document.getElementById('modal-editar-cliente');
+    if (modal) modal.style.display = 'none';
+};
+
+window.salvarEdicaoCliente = async function() {
+    const id = document.getElementById('edit-cli-id').value;
+    const clienteOriginal = window.GoianitaDB.clientes.getById(id);
+    if (!clienteOriginal) { alert('Fornecedor não encontrado.'); return; }
+
+    const nome = document.getElementById('edit-cli-nome').value.trim();
+    const tel = document.getElementById('edit-cli-tel').value.trim();
+    const email = document.getElementById('edit-cli-email').value.trim();
+    const endereco = document.getElementById('edit-cli-endereco').value.trim();
+    const contato = document.getElementById('edit-cli-contato').value.trim();
+    const comissao = parseFloat(document.getElementById('edit-cli-comissao').value) || 50;
+    const pixType = document.getElementById('edit-cli-pix-type').value;
+    const pix = document.getElementById('edit-cli-pix').value.trim();
+
+    if (!nome) { alert('Informe o nome completo do fornecedor.'); return; }
+    if (!tel) { alert('Informe o telefone / WhatsApp do fornecedor.'); return; }
+    if (!email) { alert('Informe o e-mail do fornecedor.'); return; }
+
+    // BLINDAGEM DE DADOS: preserva rigorosamente as chaves referenciais
+    const clienteAtualizado = {
+        ...clienteOriginal,
+        nome: nome,
+        telefone: tel,
+        email: email,
+        endereco: endereco,
+        contato: contato,
+        comissaoPadrao: comissao,
+        chavePixType: pixType,
+        chavePix: pix,
+        atualizadoEm: new Date().toISOString()
+    };
+
+    const btn = document.getElementById('btn-salvar-edicao-cliente');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+    }
+
+    try {
+        await window.GoianitaDB.clientes.save(clienteAtualizado);
+        alert('Cadastro do fornecedor atualizado com sucesso!');
+        window.location.reload();
+    } catch (err) {
+        alert('Erro ao salvar alterações: ' + (err.message || err));
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
     }
 };
 

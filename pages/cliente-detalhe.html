@@ -94,6 +94,9 @@
                     <a href="clientes.html" class="btn btn-secondary">
                         <i class="fa-solid fa-arrow-left"></i> Voltar à Lista
                     </a>
+                    <button id="btn-editar-cliente" class="btn btn-secondary" onclick="window.abrirEditarCliente()">
+                        <i class="fa-solid fa-user-pen"></i> Editar Cadastro
+                    </button>
                     <button id="btn-pagar-cliente" class="btn btn-gold">
                         <i class="fa-solid fa-file-invoice-dollar"></i> Efetuar Repasse (PIX)
                     </button>
@@ -217,6 +220,82 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal Editar Cliente -->
+    <div id="modal-editar-cliente" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+        <div class="form-card" style="width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <div class="page-header" style="margin-bottom: 24px;">
+                <h3>Editar Dados do Fornecedor</h3>
+                <button type="button" onclick="window.fecharEditarCliente()" class="btn btn-secondary" style="padding: 6px 12px;">X</button>
+            </div>
+            
+            <form id="edit-cliente-form" class="form-grid" onsubmit="event.preventDefault(); window.salvarEdicaoCliente();">
+                <input type="hidden" id="edit-cli-id">
+                
+                <div class="form-group full-width">
+                    <label class="form-label" for="edit-cli-nome">Nome Completo *</label>
+                    <input type="text" id="edit-cli-nome" class="form-control" required placeholder="Digite o nome completo do cliente">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="edit-cli-cpf">CPF / CNPJ (Bloqueado)</label>
+                    <input type="text" id="edit-cli-cpf" class="form-control" disabled style="background-color: var(--bg-secondary); cursor: not-allowed;" title="O CPF/CNPJ é a chave de identificação do fornecedor e não pode ser alterado.">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="edit-cli-codigo">Código Fornecedor / SKU (Bloqueado)</label>
+                    <input type="text" id="edit-cli-codigo" class="form-control" disabled style="background-color: var(--bg-secondary); cursor: not-allowed;" title="Código numérico gerador dos SKUs dos produtos.">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-cli-tel">Telefone / Whatsapp *</label>
+                    <input type="text" id="edit-cli-tel" class="form-control" required placeholder="(62) 99999-9999">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="edit-cli-email">E-mail *</label>
+                    <input type="email" id="edit-cli-email" class="form-control" required placeholder="exemplo@gmail.com">
+                </div>
+                
+                <div class="form-group full-width">
+                    <label class="form-label" for="edit-cli-endereco">Endereço Completo</label>
+                    <input type="text" id="edit-cli-endereco" class="form-control" placeholder="Rua, número, complemento, bairro, cidade/UF">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="edit-cli-contato">Contato (responsável)</label>
+                    <input type="text" id="edit-cli-contato" class="form-control" placeholder="Nome de quem entregou / referência">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-cli-comissao">Comissão Goianita Padrão (%)</label>
+                    <input type="number" id="edit-cli-comissao" class="form-control" min="0" max="100" step="1" placeholder="50">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-cli-pix-type">Tipo de Chave PIX</label>
+                    <select id="edit-cli-pix-type" class="filter-select" style="width: 100%;">
+                        <option value="CPF">CPF</option>
+                        <option value="Celular">Celular</option>
+                        <option value="Email">E-mail</option>
+                        <option value="Chave Aleatória">Chave Aleatória</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="edit-cli-pix">Chave PIX</label>
+                    <input type="text" id="edit-cli-pix" class="form-control" placeholder="Digite a chave PIX">
+                </div>
+                
+                <div class="form-actions full-width" style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+                    <button type="button" onclick="window.fecharEditarCliente()" class="btn btn-secondary">Cancelar</button>
+                    <button type="submit" id="btn-salvar-edicao-cliente" class="btn btn-primary">
+                        <i class="fa-solid fa-save"></i> Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Biblioteca para gerar documentos .docx por código (Nota de Entrada / Recibo de Devolução) -->
